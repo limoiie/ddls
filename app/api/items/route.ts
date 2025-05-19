@@ -5,26 +5,30 @@ import { Conference } from "@/app/types/api";
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const keyword = searchParams.get("keyword")?.toLowerCase() || "";
+  const ccf = searchParams.get("ccf") || "";
   const pageIndex = parseInt(searchParams.get("pageIndex") || "0");
   const pageSize = parseInt(searchParams.get("pageSize") || "10");
 
   // Read conferences from YAML files
   const items: Conference[] = await readAllYamlFiles();
 
-  // Filter items based on keyword if provided
-  const filteredItems: Conference[] = keyword
-    ? items.filter(
-        (item) =>
-          item.title.toLowerCase().includes(keyword) ||
-          item.description.toLowerCase().includes(keyword) ||
-          item.sub.toLowerCase().includes(keyword) ||
-          item.confs.some(
-            (conf) =>
-              conf.place.toLowerCase().includes(keyword) ||
-              conf.id.toLowerCase().includes(keyword)
-          )
-      )
-    : items;
+  // Filter items based on keyword and CCF if provided
+  const filteredItems: Conference[] = items.filter((item) => {
+    const matchesKeyword =
+      !keyword ||
+      item.title.toLowerCase().includes(keyword) ||
+      item.description.toLowerCase().includes(keyword) ||
+      item.sub.toLowerCase().includes(keyword) ||
+      item.confs.some(
+        (conf) =>
+          conf.place.toLowerCase().includes(keyword) ||
+          conf.id.toLowerCase().includes(keyword)
+      );
+
+    const matchesCCF =
+      !ccf || item.rank.ccf === ccf || (ccf === "N" && !item.rank.ccf);
+    return matchesKeyword && matchesCCF;
+  });
 
   const sortedFilteredItems = filteredItems
     // sort by the latest conference date

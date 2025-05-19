@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Conference } from "../types/api";
 import ConferenceConf from "./ConferenceConf";
+import { Badge } from "@/components/ui/badge";
+const CCF_TAGS = ["A", "B", "C", "N"];
 
 export default function ConferenceList() {
   const [conferences, setConferences] = useState<Conference[]>([]);
@@ -12,6 +14,7 @@ export default function ConferenceList() {
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [keyword, setKeyword] = useState("");
+  const [selectedCCF, setSelectedCCF] = useState<string>("");
 
   const fetchConferences = useCallback(async () => {
     try {
@@ -20,6 +23,7 @@ export default function ConferenceList() {
         pageIndex: pageIndex.toString(),
         pageSize: pageSize.toString(),
         ...(keyword && { keyword }),
+        ...(selectedCCF && { ccf: selectedCCF }),
       });
 
       const response = await fetch(`/api/items?${params}`);
@@ -33,7 +37,7 @@ export default function ConferenceList() {
     } finally {
       setLoading(false);
     }
-  }, [pageIndex, pageSize, keyword]);
+  }, [pageIndex, pageSize, keyword, selectedCCF]);
 
   useEffect(() => {
     fetchConferences();
@@ -45,7 +49,7 @@ export default function ConferenceList() {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <div className="mb-6">
+      <div className="mb-6 space-y-4">
         <input
           type="text"
           placeholder="Search conferences..."
@@ -53,6 +57,31 @@ export default function ConferenceList() {
           onChange={(e) => setKeyword(e.target.value)}
           className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+        <div className="flex gap-2">
+          <button
+            onClick={() => setSelectedCCF("")}
+            className={`px-3 py-1 rounded-lg border ${
+              selectedCCF === ""
+                ? "bg-blue-500 text-white border-blue-500"
+                : "hover:bg-gray-100 dark:hover:bg-gray-700"
+            }`}
+          >
+            All
+          </button>
+          {CCF_TAGS.map((tag) => (
+            <button
+              key={tag}
+              onClick={() => setSelectedCCF(tag)}
+              className={`px-3 py-1 rounded-lg border ${
+                selectedCCF === tag
+                  ? "bg-blue-500 text-white border-blue-500"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
+            >
+              CCF-{tag}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -61,38 +90,34 @@ export default function ConferenceList() {
             key={conference.title.toUpperCase()}
             className="flex flex-col gap-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md"
           >
-            <div className="flex flex-row gap-4 items-end">
+            {/* <div className="flex flex-row gap-4 items-end">
               <div className="flex-1 flex flex-row gap-4 items-end">
                 <h2 className="text-2xl font-bold">{conference.title}</h2>
                 <p className="text-gray-600 dark:text-gray-300">
                   {conference.description}
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded-full text-xs">
-                  {conference.sub}
-                </span>
-                {conference.rank.ccf && (
-                  <span className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 rounded-full text-xs">
-                    CCF: {conference.rank.ccf}
-                  </span>
-                )}
-                {conference.rank.core && (
-                  <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-100 rounded-full text-xs">
-                    CORE: {conference.rank.core}
-                  </span>
-                )}
-                {conference.rank.thcpl && (
-                  <span className="px-3 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 rounded-full text-xs">
-                    THCPL: {conference.rank.thcpl}
-                  </span>
-                )}
-              </div>
-            </div>
+            </div> */}
             <div className="space-y-4">
               {conference.confs.map((conf) => (
-                <ConferenceConf key={conf.id} conf={conf} />
+                <ConferenceConf
+                  key={conf.id}
+                  conf={conf}
+                  confSeries={conference}
+                />
               ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline">{conference.sub}</Badge>
+              {conference.rank.ccf && (
+                <Badge variant="outline">CCF: {conference.rank.ccf}</Badge>
+              )}
+              {conference.rank.core && (
+                <Badge variant="outline">CORE: {conference.rank.core}</Badge>
+              )}
+              {conference.rank.thcpl && (
+                <Badge variant="outline">THCPL: {conference.rank.thcpl}</Badge>
+              )}
             </div>
           </div>
         ))}

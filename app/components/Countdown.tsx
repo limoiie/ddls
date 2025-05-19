@@ -60,6 +60,9 @@ export default function Countdown({ deadline, type }: CountdownProps) {
           {timeLeft.seconds}s
         </span>
       </div>
+      <span className="text-gray-500 dark:text-gray-400">
+        {type === "abstract" ? "Abstract" : "Paper"}
+      </span>
     </div>
   );
 }

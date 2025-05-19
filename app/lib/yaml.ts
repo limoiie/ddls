@@ -19,7 +19,10 @@ export async function readAllYamlFiles(): Promise<Conference[]> {
   try {
     const conferencesDir = join(process.cwd(), "data", "conferences");
     const files = readdirSync(conferencesDir, { recursive: true }).filter(
-      (file) => typeof file === "string" && (file.endsWith(".yml") || file.endsWith(".yaml"))
+      (file) =>
+        typeof file === "string" &&
+        file !== "types.yml" &&
+        (file.endsWith(".yml") || file.endsWith(".yaml"))
     );
 
     const allConferences: Conference[] = [];

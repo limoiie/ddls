@@ -1,20 +1,39 @@
-import { ConferenceEvent, Timeline } from "../types/api";
+import { isPast } from "date-fns";
+import { Conference, ConferenceEvent, Timeline } from "../types/api";
 import Countdown from "./Countdown";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ConferenceConfProps {
   conf: ConferenceEvent;
+  confSeries: Conference;
 }
 
-export default function ConferenceConf({ conf }: ConferenceConfProps) {
+export default function ConferenceConf({
+  conf,
+  confSeries,
+}: ConferenceConfProps) {
   return (
-    <div
-      key={conf.id}
-      className="flex flex-row gap-4 border-t pt-4 dark:border-gray-700"
-    >
+    <div key={conf.id} className="flex flex-row gap-4">
       <div className="w-1/2 flex justify-between items-start">
         <div>
           <div className="flex flex-row gap-4 items-end">
-            <h3 className="font-semibold">{conf.id.toUpperCase()}</h3>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <h3 className="font-semibold">
+                    {confSeries.title.toUpperCase()}
+                  </h3>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{confSeries.description}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {conf.date}
             </p>
@@ -35,28 +54,31 @@ export default function ConferenceConf({ conf }: ConferenceConfProps) {
           </div>
         </div>
       </div>
-      <div>
-        {conf.timeline.map((timeline: Timeline, idx: number) => (
+      <div className="flex flex-col gap-4">
+        {conf.timeline.slice(0, 1).map((timeline: Timeline, idx: number) => (
           <div key={idx} className="flex flex-col gap-2 text-sm">
-            {timeline.abstract_deadline && (
-              <div className="flex flex-col gap-1">
-                <Countdown
-                  deadline={timeline.abstract_deadline}
-                  type="abstract"
-                />
-                <p className="text-gray-600 dark:text-gray-400">
-                  Abstract Deadline: {timeline.abstract_deadline}
-                </p>
-              </div>
-            )}
-            {timeline.deadline && (
-              <div className="flex flex-col gap-1">
-                <Countdown deadline={timeline.deadline} type="paper" />
-                <p className="text-gray-600 dark:text-gray-400">
-                  Paper Deadline: {timeline.deadline}
-                </p>
-              </div>
-            )}
+            {timeline.abstract_deadline &&
+              !isPast(timeline.abstract_deadline) && (
+                <div className="flex flex-col gap-1">
+                  <Countdown
+                    deadline={timeline.abstract_deadline}
+                    type="abstract"
+                  />
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Abstract Deadline: {timeline.abstract_deadline}
+                  </p>
+                </div>
+              )}
+            {(!timeline.abstract_deadline ||
+              isPast(timeline.abstract_deadline)) &&
+              timeline.deadline && (
+                <div className="flex flex-col gap-1">
+                  <Countdown deadline={timeline.deadline} type="paper" />
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Paper Deadline: {timeline.deadline}
+                  </p>
+                </div>
+              )}
           </div>
         ))}
       </div>
