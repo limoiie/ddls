@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   const ccf = searchParams.get("ccf") || "";
   const startDate = searchParams.get("startDate") || "";
   const endDate = searchParams.get("endDate") || "";
+  const pinnedIds = searchParams.get("pinnedIds")?.split(",") || [];
   const pageIndex = parseInt(searchParams.get("pageIndex") || "0");
   const pageSize = parseInt(searchParams.get("pageSize") || "10");
 
@@ -76,16 +77,27 @@ export async function GET(request: NextRequest) {
     // filter out items that have no conferences
     .filter((item) => item.confs.length > 0);
 
+  // Separate pinned and unpinned items
+  const pinnedItems = sortedFilteredItems.filter((item) =>
+    pinnedIds.includes(item.title)
+  );
+  const unpinnedItems = sortedFilteredItems.filter(
+    (item) => !pinnedIds.includes(item.title)
+  );
+
+  // Combine pinned and unpinned items
+  const combinedItems = [...pinnedItems, ...unpinnedItems];
+
   // Calculate pagination
   const startIndex = pageIndex * pageSize;
   const endIndex = startIndex + pageSize;
-  const paginatedItems = sortedFilteredItems.slice(startIndex, endIndex);
+  const paginatedItems = combinedItems.slice(startIndex, endIndex);
 
   return NextResponse.json({
     items: paginatedItems,
-    total: sortedFilteredItems.length,
+    total: combinedItems.length,
     pageIndex,
     pageSize,
-    totalPages: Math.ceil(sortedFilteredItems.length / pageSize),
+    totalPages: Math.ceil(combinedItems.length / pageSize),
   });
 }

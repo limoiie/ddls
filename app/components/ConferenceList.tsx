@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
+import { PinIcon } from "lucide-react";
 
 const CCF_TAGS = ["A", "B", "C", "N"];
 
@@ -20,6 +21,23 @@ export default function ConferenceList() {
   const [keyword, setKeyword] = useState("");
   const [selectedCCF, setSelectedCCF] = useState<string>("");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("pinnedConferences");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  const togglePin = useCallback((title: string) => {
+    setPinnedIds((prev) => {
+      const newPinnedIds = prev.includes(title)
+        ? prev.filter((id) => id !== title)
+        : [...prev, title];
+      localStorage.setItem("pinnedConferences", JSON.stringify(newPinnedIds));
+      return newPinnedIds;
+    });
+  }, []);
 
   const fetchConferences = useCallback(async () => {
     try {
@@ -33,6 +51,7 @@ export default function ConferenceList() {
           startDate: format(dateRange.from, "yyyy-MM-dd"),
         }),
         ...(dateRange?.to && { endDate: format(dateRange.to, "yyyy-MM-dd") }),
+        ...(pinnedIds.length > 0 && { pinnedIds: pinnedIds.join(",") }),
       });
 
       const response = await fetch(`/api/items?${params}`);
@@ -46,7 +65,7 @@ export default function ConferenceList() {
     } finally {
       setLoading(false);
     }
-  }, [pageIndex, pageSize, keyword, selectedCCF, dateRange]);
+  }, [pageIndex, pageSize, keyword, selectedCCF, dateRange, pinnedIds]);
 
   useEffect(() => {
     fetchConferences();
@@ -104,16 +123,23 @@ export default function ConferenceList() {
         {conferences.map((conference) => (
           <div
             key={conference.title.toUpperCase()}
-            className="flex flex-col gap-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md"
+            className="group flex flex-col gap-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md relative"
           >
-            {/* <div className="flex flex-row gap-4 items-end">
-              <div className="flex-1 flex flex-row gap-4 items-end">
-                <h2 className="text-2xl font-bold">{conference.title}</h2>
-                <p className="text-gray-600 dark:text-gray-300">
-                  {conference.description}
-                </p>
-              </div>
-            </div> */}
+            <button
+              onClick={() => togglePin(conference.title)}
+              className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${
+                pinnedIds.includes(conference.title)
+                  ? "text-blue-500 hover:text-blue-600"
+                  : "text-gray-400 hover:text-gray-500 opacity-0 group-hover:opacity-100"
+              }`}
+              title={pinnedIds.includes(conference.title) ? "Unpin" : "Pin"}
+            >
+              <PinIcon
+                className={`w-5 h-5 ${
+                  pinnedIds.includes(conference.title) ? "fill-current" : ""
+                }`}
+              />
+            </button>
             <div className="space-y-4">
               {conference.confs.map((conf) => (
                 <ConferenceConf
