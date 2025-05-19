@@ -6,13 +6,15 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const keyword = searchParams.get("keyword")?.toLowerCase() || "";
   const ccf = searchParams.get("ccf") || "";
+  const startDate = searchParams.get("startDate") || "";
+  const endDate = searchParams.get("endDate") || "";
   const pageIndex = parseInt(searchParams.get("pageIndex") || "0");
   const pageSize = parseInt(searchParams.get("pageSize") || "10");
 
   // Read conferences from YAML files
   const items: Conference[] = await readAllYamlFiles();
 
-  // Filter items based on keyword and CCF if provided
+  // Filter items based on keyword, CCF, and date range if provided
   const filteredItems: Conference[] = items.filter((item) => {
     const matchesKeyword =
       !keyword ||
@@ -27,7 +29,17 @@ export async function GET(request: NextRequest) {
 
     const matchesCCF =
       !ccf || item.rank.ccf === ccf || (ccf === "N" && !item.rank.ccf);
-    return matchesKeyword && matchesCCF;
+
+    const matchesDateRange = !startDate || !endDate || item.confs.some((conf) => {
+      const deadlineDate = new Date(
+        conf.timeline[0].deadline || conf.timeline[0].abstract_deadline || ""
+      );
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      return deadlineDate >= start && deadlineDate <= end;
+    });
+
+    return matchesKeyword && matchesCCF && matchesDateRange;
   });
 
   const sortedFilteredItems = filteredItems

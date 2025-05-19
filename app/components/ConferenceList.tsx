@@ -4,6 +4,10 @@ import { useState, useEffect, useCallback } from "react";
 import { Conference } from "../types/api";
 import ConferenceConf from "./ConferenceConf";
 import { Badge } from "@/components/ui/badge";
+import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
+import { DateRange } from "react-day-picker";
+import { format } from "date-fns";
+
 const CCF_TAGS = ["A", "B", "C", "N"];
 
 export default function ConferenceList() {
@@ -15,6 +19,7 @@ export default function ConferenceList() {
   const [totalPages, setTotalPages] = useState(0);
   const [keyword, setKeyword] = useState("");
   const [selectedCCF, setSelectedCCF] = useState<string>("");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   const fetchConferences = useCallback(async () => {
     try {
@@ -24,6 +29,10 @@ export default function ConferenceList() {
         pageSize: pageSize.toString(),
         ...(keyword && { keyword }),
         ...(selectedCCF && { ccf: selectedCCF }),
+        ...(dateRange?.from && {
+          startDate: format(dateRange.from, "yyyy-MM-dd"),
+        }),
+        ...(dateRange?.to && { endDate: format(dateRange.to, "yyyy-MM-dd") }),
       });
 
       const response = await fetch(`/api/items?${params}`);
@@ -37,7 +46,7 @@ export default function ConferenceList() {
     } finally {
       setLoading(false);
     }
-  }, [pageIndex, pageSize, keyword, selectedCCF]);
+  }, [pageIndex, pageSize, keyword, selectedCCF, dateRange]);
 
   useEffect(() => {
     fetchConferences();
@@ -50,13 +59,20 @@ export default function ConferenceList() {
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div className="mb-6 space-y-4">
-        <input
-          type="text"
-          placeholder="Search conferences..."
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+        <div className="flex gap-4">
+          <input
+            type="text"
+            placeholder="Search conferences..."
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <DatePickerWithRange
+            date={dateRange}
+            onDateChange={setDateRange}
+            className="w-[300px]"
+          />
+        </div>
         <div className="flex gap-2">
           <button
             onClick={() => setSelectedCCF("")}
