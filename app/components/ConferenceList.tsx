@@ -7,11 +7,19 @@ import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
-import { StarIcon } from "lucide-react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ChevronsLeftIcon, ChevronsRightIcon, StarIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationLink,
+} from "@/components/ui/pagination";
 
 const CCF_TAGS = ["A", "B", "C", "N"];
+const DEBOUNCE_DELAY = 300; // 300ms delay
 
 export default function ConferenceList() {
   const [conferences, setConferences] = useState<Conference[]>([]);
@@ -21,6 +29,7 @@ export default function ConferenceList() {
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [keyword, setKeyword] = useState("");
+  const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [selectedCCFs, setSelectedCCFs] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
@@ -30,6 +39,15 @@ export default function ConferenceList() {
     }
     return [];
   });
+
+  // Add debounce effect for keyword
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedKeyword(keyword);
+    }, DEBOUNCE_DELAY);
+
+    return () => clearTimeout(timer);
+  }, [keyword]);
 
   const togglePin = useCallback((title: string) => {
     setPinnedIds((prev) => {
@@ -65,7 +83,7 @@ export default function ConferenceList() {
       const params = new URLSearchParams({
         pageIndex: pageIndex.toString(),
         pageSize: pageSize.toString(),
-        ...(keyword && { keyword }),
+        ...(debouncedKeyword && { keyword: debouncedKeyword }),
         ...(selectedCCFs.length > 0 && { ccf: selectedCCFs.join(",") }),
         ...(dateRange?.from && {
           startDate: format(dateRange.from, "yyyy-MM-dd"),
@@ -85,13 +103,19 @@ export default function ConferenceList() {
     } finally {
       setLoading(false);
     }
-  }, [pageIndex, pageSize, keyword, selectedCCFs, dateRange, pinnedIds]);
+  }, [
+    pageIndex,
+    pageSize,
+    debouncedKeyword,
+    selectedCCFs,
+    dateRange,
+    pinnedIds,
+  ]);
 
   useEffect(() => {
     fetchConferences();
   }, [fetchConferences]);
 
-  if (loading) return <div className="text-center py-8">Loading...</div>;
   if (error)
     return <div className="text-center py-8 text-red-500">{error}</div>;
 
@@ -136,70 +160,93 @@ export default function ConferenceList() {
       </div>
 
       <div className="space-y-6">
-        {conferences.map((conference) => (
-          <div
-            key={conference.title.toUpperCase()}
-            className="group flex flex-col gap-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md relative"
-          >
-            <button
-              onClick={() => togglePin(conference.title)}
-              className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${
-                pinnedIds.includes(conference.title)
-                  ? "text-blue-500 hover:text-blue-600"
-                  : "text-gray-400 hover:text-gray-500 opacity-0 group-hover:opacity-100"
-              }`}
-              title={pinnedIds.includes(conference.title) ? "Unpin" : "Pin"}
+        {loading ? (
+          <div className="text-center py-8">Loading...</div>
+        ) : (
+          conferences.map((conference) => (
+            <div
+              key={conference.title.toUpperCase()}
+              className="group flex flex-col gap-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md relative"
             >
-              <StarIcon
-                className={`w-5 h-5 ${
-                  pinnedIds.includes(conference.title) ? "fill-current" : ""
+              <button
+                onClick={() => togglePin(conference.title)}
+                className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${
+                  pinnedIds.includes(conference.title)
+                    ? "text-blue-500 hover:text-blue-600"
+                    : "text-gray-400 hover:text-gray-500 opacity-0 group-hover:opacity-100"
                 }`}
-              />
-            </button>
-            <div className="space-y-4">
-              {conference.confs.map((conf) => (
-                <ConferenceConf
-                  key={conf.id}
-                  conf={conf}
-                  confSeries={conference}
+                title={pinnedIds.includes(conference.title) ? "Unpin" : "Pin"}
+              >
+                <StarIcon
+                  className={`w-5 h-5 ${
+                    pinnedIds.includes(conference.title) ? "fill-current" : ""
+                  }`}
                 />
-              ))}
+              </button>
+              <div className="space-y-4">
+                {conference.confs.map((conf) => (
+                  <ConferenceConf
+                    key={conf.id}
+                    conf={conf}
+                    confSeries={conference}
+                  />
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline">{conference.sub}</Badge>
+                {conference.rank.ccf && (
+                  <Badge variant="outline">CCF: {conference.rank.ccf}</Badge>
+                )}
+                {conference.rank.core && (
+                  <Badge variant="outline">CORE: {conference.rank.core}</Badge>
+                )}
+                {conference.rank.thcpl && (
+                  <Badge variant="outline">
+                    THCPL: {conference.rank.thcpl}
+                  </Badge>
+                )}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline">{conference.sub}</Badge>
-              {conference.rank.ccf && (
-                <Badge variant="outline">CCF: {conference.rank.ccf}</Badge>
-              )}
-              {conference.rank.core && (
-                <Badge variant="outline">CORE: {conference.rank.core}</Badge>
-              )}
-              {conference.rank.thcpl && (
-                <Badge variant="outline">THCPL: {conference.rank.thcpl}</Badge>
-              )}
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
-      <div className="mt-8 flex justify-center gap-2">
-        <button
-          onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
-          disabled={pageIndex === 0}
-          className="px-4 py-2 border rounded-lg disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <span className="px-4 py-2">
-          Page {pageIndex + 1} of {totalPages}
-        </span>
-        <button
-          onClick={() => setPageIndex((p) => Math.min(totalPages - 1, p + 1))}
-          disabled={pageIndex === totalPages - 1}
-          className="px-4 py-2 border rounded-lg disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+      <Pagination className="mt-8 flex justify-center gap-2">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationLink onClick={() => setPageIndex(0)}>
+              <ChevronsLeftIcon className="size-4" />
+            </PaginationLink>
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
+            />
+          </PaginationItem>
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <PaginationItem key={i}>
+              <PaginationLink
+                onClick={() => setPageIndex(i)}
+                isActive={pageIndex === i}
+              >
+                {i + 1}
+              </PaginationLink>
+            </PaginationItem>
+          ))}
+          <PaginationItem>
+            <PaginationNext
+              onClick={() =>
+                setPageIndex((p) => Math.min(totalPages - 1, p + 1))
+              }
+            />
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationLink onClick={() => setPageIndex(totalPages - 1)}>
+              <ChevronsRightIcon className="size-4" />
+            </PaginationLink>
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </div>
   );
 }
