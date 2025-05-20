@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readAllYamlFiles } from "@/app/lib/yaml";
+import { readAllConferenceYamlFiles } from "@/app/lib/yaml";
 import { Conference, ConferenceEvent } from "@/app/types/api";
 import { isPast } from "date-fns";
 import { getIANATimezone } from "@/app/lib/date";
@@ -18,7 +18,16 @@ function getLatestDateOfConferenceEvent(conf: ConferenceEvent) {
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const keyword = searchParams.get("keyword")?.toLowerCase() || "";
-  const ccf = searchParams.get("ccf") || "";
+  const ccf =
+    searchParams
+      .get("ccf")
+      ?.split(",")
+      .filter((c) => c !== "") || [];
+  const types =
+    searchParams
+      .get("types")
+      ?.split(",")
+      .filter((t) => t !== "") || [];
   const startDate = searchParams.get("startDate") || "";
   const endDate = searchParams.get("endDate") || "";
   const pinnedIds = searchParams.get("pinnedIds")?.split(",") || [];
@@ -26,7 +35,7 @@ export async function GET(request: NextRequest) {
   const pageSize = parseInt(searchParams.get("pageSize") || "10");
 
   // Read conferences from YAML files
-  const items: Conference[] = await readAllYamlFiles();
+  const items: Conference[] = await readAllConferenceYamlFiles();
 
   // Filter items based on keyword, CCF, and date range if provided and sort by the latest conference date
   const sortedFilteredItems: Conference[] = items
@@ -42,10 +51,12 @@ export async function GET(request: NextRequest) {
             conf.id.toLowerCase().includes(keyword)
         );
 
+      const matchesTypes = types.length === 0 || types.includes(item.sub);
+
       const matchesCCF =
-        !ccf ||
-        (ccf.split(",").includes(item.rank.ccf) && item.rank.ccf !== "") ||
-        (ccf.split(",").includes("N") && !item.rank.ccf);
+        ccf.length === 0 ||
+        (ccf.includes(item.rank.ccf) && item.rank.ccf !== "") ||
+        (ccf.includes("N") && !item.rank.ccf);
 
       const matchesDateRange =
         !startDate ||
@@ -57,7 +68,7 @@ export async function GET(request: NextRequest) {
           return deadlineDate >= start && deadlineDate <= end;
         });
 
-      return matchesKeyword && matchesCCF && matchesDateRange;
+      return matchesKeyword && matchesTypes && matchesCCF && matchesDateRange;
     })
     .map((item) => {
       return {

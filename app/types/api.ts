@@ -36,3 +36,9 @@ export interface PaginatedResponse {
   pageSize: number;
   totalPages: number;
 }
+
+export interface ConferenceType {
+  name: string;
+  name_en: string;
+  sub: string;
+}

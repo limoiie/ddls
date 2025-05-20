@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Conference } from "../types/api";
+import { Conference, ConferenceType } from "../types/api";
 import ConferenceConf from "./ConferenceConf";
 import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
@@ -29,6 +29,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const CCF_TAGS = ["A", "B", "C", "N"];
 const DEBOUNCE_DELAY = 300; // 300ms delay
@@ -42,6 +48,8 @@ export default function ConferenceList() {
   const [totalPages, setTotalPages] = useState(0);
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
+  const [types, setTypes] = useState<ConferenceType[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCCFs, setSelectedCCFs] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
@@ -60,6 +68,23 @@ export default function ConferenceList() {
 
     return () => clearTimeout(timer);
   }, [keyword]);
+
+  // Load conference types
+  useEffect(() => {
+    const loadTypes = async () => {
+      try {
+        const response = await fetch("/api/types");
+        if (!response.ok) {
+          throw new Error("Failed to load conference types");
+        }
+        const data = await response.json();
+        setTypes(data);
+      } catch (error) {
+        console.error("Error loading conference types:", error);
+      }
+    };
+    loadTypes();
+  }, []);
 
   const togglePin = useCallback((title: string) => {
     setPinnedIds((prev) => {
@@ -80,39 +105,55 @@ export default function ConferenceList() {
     });
   }, []);
 
+  const toggleSelectedType = useCallback((type: string) => {
+    setSelectedTypes((prev) => {
+      const newSelectedTypes = prev.includes(type)
+        ? prev.filter((t) => t !== type)
+        : [...prev, type];
+      return newSelectedTypes;
+    });
+  }, []);
+
   const fetchConferences = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
+        keyword: debouncedKeyword,
+        ccf: selectedCCFs.join(","),
+        types: selectedTypes.join(","),
         pageIndex: pageIndex.toString(),
         pageSize: pageSize.toString(),
-        ...(debouncedKeyword && { keyword: debouncedKeyword }),
-        ...(selectedCCFs.length > 0 && { ccf: selectedCCFs.join(",") }),
-        ...(dateRange?.from && {
-          startDate: format(dateRange.from, "yyyy-MM-dd"),
-        }),
-        ...(dateRange?.to && { endDate: format(dateRange.to, "yyyy-MM-dd") }),
-        ...(pinnedIds.length > 0 && { pinnedIds: pinnedIds.join(",") }),
+        pinnedIds: pinnedIds.join(","),
       });
 
-      const response = await fetch(`/api/items?${params}`);
-      if (!response.ok) throw new Error("Failed to fetch conferences");
+      if (dateRange?.from) {
+        params.append("startDate", format(dateRange.from, "yyyy-MM-dd"));
+      }
+      if (dateRange?.to) {
+        params.append("endDate", format(dateRange.to, "yyyy-MM-dd"));
+      }
 
+      const response = await fetch(`/api/items?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch conferences");
+      }
       const data = await response.json();
       setConferences(data.items);
       setTotalPages(data.totalPages);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+    } catch (error) {
+      console.error("Error fetching conferences:", error);
+      setError("Failed to load conferences. Please try again later.");
     } finally {
       setLoading(false);
     }
   }, [
-    pageIndex,
-    pageSize,
     debouncedKeyword,
     selectedCCFs,
-    dateRange,
+    selectedTypes,
+    pageIndex,
+    pageSize,
     pinnedIds,
+    dateRange,
   ]);
 
   useEffect(() => {
@@ -135,7 +176,7 @@ export default function ConferenceList() {
           />
           <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {CCF_TAGS.map((tag) => (
             <Badge
               key={tag}
@@ -158,6 +199,40 @@ export default function ConferenceList() {
             <BrushCleaningIcon className="size-4" />
           </Button>
         </div>
+        <div className="flex flex-wrap gap-2">
+          {types.map((type) => (
+            <Badge
+              key={type.sub}
+              variant={`${
+                selectedTypes.includes(type.sub) ? "default" : "outline"
+              }`}
+              onClick={() => toggleSelectedType(type.sub)}
+              className={`px-3 py-1 rounded-lg border ${
+                selectedTypes.includes(type.sub)
+                  ? "bg-blue-500 text-white border-blue-500"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
+            >
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>{type.sub}</span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {type.name} ({type.name_en})
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Badge>
+          ))}
+          <Button
+            variant="ghost"
+            onClick={() => setSelectedTypes([])}
+            className={`${selectedTypes.length > 0 ? "visible" : "invisible"}`}
+          >
+            <BrushCleaningIcon className="size-4" />
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -167,7 +242,7 @@ export default function ConferenceList() {
           conferences.map((conference) => (
             <div
               key={conference.title.toUpperCase()}
-              className="group flex flex-col gap-4 p-6 rounded-lg shadow-md relative"
+              className="group flex flex-col gap-4 p-6 rounded-lg shadow-md relative bg-gray-50 dark:bg-gray-800"
             >
               <button
                 onClick={() => togglePin(conference.title)}

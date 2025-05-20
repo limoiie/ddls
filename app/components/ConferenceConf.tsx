@@ -149,7 +149,7 @@ export default function ConferenceConf({
                   deadline={timeline.abstract_deadline!}
                   type="abstract"
                 />
-                <p
+                <div
                   className={`${
                     allDeadlinesPassed
                       ? "text-gray-400 dark:text-gray-500"
@@ -160,12 +160,12 @@ export default function ConferenceConf({
                     Abstract Deadline:{" "}
                     {formatDeadline(timeline.abstract_deadline!, conf.timezone)}
                   </div>
-                </p>
+                </div>
               </div>
             ) : !isOutdated(timeline.deadline) ? (
               <div className="flex flex-col gap-1">
                 <Countdown deadline={timeline.deadline!} type="paper" />
-                <p
+                <div
                   className={`${
                     allDeadlinesPassed
                       ? "text-gray-400 dark:text-gray-500"
@@ -176,11 +176,11 @@ export default function ConferenceConf({
                     Paper Deadline:{" "}
                     {formatDeadline(timeline.deadline!, conf.timezone)}
                   </div>
-                </p>
+                </div>
               </div>
             ) : (
               <div className="flex flex-col gap-1">
-                <p
+                <div
                   className={`${
                     allDeadlinesPassed
                       ? "text-gray-400 dark:text-gray-500"
@@ -191,7 +191,7 @@ export default function ConferenceConf({
                     Paper Deadline:{" "}
                     {formatDeadline(timeline.deadline!, conf.timezone)}
                   </div>
-                </p>
+                </div>
               </div>
             )}
           </div>

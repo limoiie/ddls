@@ -15,7 +15,7 @@ export function readYamlFile(filename: string): Conference[] {
   }
 }
 
-export async function readAllYamlFiles(): Promise<Conference[]> {
+export async function readAllConferenceYamlFiles(): Promise<Conference[]> {
   try {
     const conferencesDir = join(process.cwd(), "data", "conferences");
     const files = readdirSync(conferencesDir, { recursive: true }).filter(
@@ -34,6 +34,18 @@ export async function readAllYamlFiles(): Promise<Conference[]> {
     return allConferences;
   } catch (error) {
     console.error("Error reading YAML files:", error);
+    return [];
+  }
+}
+
+export async function readTypesYamlFile(): Promise<Conference[]> {
+  try {
+    const filePath = join(process.cwd(), "data", "conferences", "types.yml");
+    const fileContents = readFileSync(filePath, "utf8");
+    const data = yaml.load(fileContents) as Conference[];
+    return data;
+  } catch (error) {
+    console.error("Error reading YAML file types.yml:", error);
     return [];
   }
 }
