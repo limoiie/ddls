@@ -33,15 +33,6 @@ import {
 const CCF_TAGS = ["A", "B", "C", "N"];
 const DEBOUNCE_DELAY = 300; // 300ms delay
 
-function areAllDeadlinesPassed(conference: Conference): boolean {
-  return conference.confs.every((conf) => {
-    const deadlineDate = new Date(
-      conf.timeline[0].deadline || conf.timeline[0].abstract_deadline || ""
-    );
-    return deadlineDate.getTime() < Date.now();
-  });
-}
-
 export default function ConferenceList() {
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [loading, setLoading] = useState(true);
@@ -176,11 +167,7 @@ export default function ConferenceList() {
           conferences.map((conference) => (
             <div
               key={conference.title.toUpperCase()}
-              className={`group flex flex-col gap-4 p-6 rounded-lg shadow-md relative ${
-                areAllDeadlinesPassed(conference)
-                  ? "bg-white dark:bg-gray-700 text-gray-400"
-                  : "bg-gray-100 dark:bg-gray-800"
-              }`}
+              className="group flex flex-col gap-4 p-6 rounded-lg shadow-md relative"
             >
               <button
                 onClick={() => togglePin(conference.title)}

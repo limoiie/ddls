@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readAllYamlFiles } from "@/app/lib/yaml";
 import { Conference, ConferenceEvent } from "@/app/types/api";
+import { isPast } from "date-fns";
+import { getIANATimezone } from "@/app/lib/date";
+import moment from "moment-timezone";
 
 function getLatestDateOfConferenceEvent(conf: ConferenceEvent) {
-  return new Date(
-    conf.timeline[0].deadline || conf.timeline[0].abstract_deadline || ""
-  );
+  const ianaTimezone = getIANATimezone(conf.timezone);
+  return moment
+    .tz(
+      conf.timeline[0].deadline || conf.timeline[0].abstract_deadline || "",
+      ianaTimezone
+    )
+    .toDate();
 }
 
 export async function GET(request: NextRequest) {
@@ -75,6 +82,10 @@ export async function GET(request: NextRequest) {
     .sort((a, b) => {
       const dateA = getLatestDateOfConferenceEvent(a.confs[0]);
       const dateB = getLatestDateOfConferenceEvent(b.confs[0]);
+      if (isPast(dateA) !== isPast(dateB)) {
+        return isPast(dateA) ? 1 : -1;
+      }
+
       return dateA.getTime() - dateB.getTime();
     });
 
