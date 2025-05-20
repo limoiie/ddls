@@ -7,7 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
-import { ChevronsLeftIcon, ChevronsRightIcon, StarIcon } from "lucide-react";
+import {
+  BrushCleaningIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
+  StarIcon,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -17,6 +22,7 @@ import {
   PaginationPrevious,
   PaginationLink,
 } from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
 
 const CCF_TAGS = ["A", "B", "C", "N"];
 const DEBOUNCE_DELAY = 300; // 300ms delay
@@ -65,15 +71,6 @@ export default function ConferenceList() {
         ? prev.filter((t) => t !== tag)
         : [...prev, tag];
       return newSelectedCCFs;
-    });
-  }, []);
-
-  const toggleSelectedCCFs = useCallback(() => {
-    setSelectedCCFs((prev) => {
-      if (prev.length === CCF_TAGS.length) {
-        return [];
-      }
-      return CCF_TAGS;
     });
   }, []);
 
@@ -133,15 +130,6 @@ export default function ConferenceList() {
           <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
         </div>
         <div className="flex gap-2">
-          <Badge
-            variant={`${
-              selectedCCFs.length === CCF_TAGS.length ? "default" : "outline"
-            }`}
-            onClick={() => toggleSelectedCCFs()}
-            className="px-3 py-1 rounded-lg border"
-          >
-            All
-          </Badge>
           {CCF_TAGS.map((tag) => (
             <Badge
               key={tag}
@@ -156,6 +144,13 @@ export default function ConferenceList() {
               CCF-{tag}
             </Badge>
           ))}
+          <Button
+            variant="ghost"
+            onClick={() => setSelectedCCFs([])}
+            className={`${selectedCCFs.length > 0 ? "visible" : "invisible"}`}
+          >
+            <BrushCleaningIcon className="size-4" />
+          </Button>
         </div>
       </div>
 
