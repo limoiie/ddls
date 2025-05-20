@@ -26,7 +26,7 @@ export default function ConferenceConf({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <h3 className="font-semibold">
-                    {confSeries.title.toUpperCase()}
+                    {confSeries.title.toUpperCase() + " " + conf.year}
                   </h3>
                 </TooltipTrigger>
                 <TooltipContent>
