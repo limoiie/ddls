@@ -36,7 +36,9 @@ export async function GET(request: NextRequest) {
         );
 
       const matchesCCF =
-        !ccf || item.rank.ccf === ccf || (ccf === "N" && !item.rank.ccf);
+        !ccf ||
+        (ccf.split(",").includes(item.rank.ccf) && item.rank.ccf !== "") ||
+        (ccf.split(",").includes("N") && !item.rank.ccf);
 
       const matchesDateRange =
         !startDate ||

@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
-import { PinIcon } from "lucide-react";
+import { StarIcon } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Input } from "@/components/ui/input";
 
 const CCF_TAGS = ["A", "B", "C", "N"];
 
@@ -19,7 +21,7 @@ export default function ConferenceList() {
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [keyword, setKeyword] = useState("");
-  const [selectedCCF, setSelectedCCF] = useState<string>("");
+  const [selectedCCFs, setSelectedCCFs] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
     if (typeof window !== "undefined") {
@@ -39,6 +41,24 @@ export default function ConferenceList() {
     });
   }, []);
 
+  const toggleSelectedCCF = useCallback((tag: string) => {
+    setSelectedCCFs((prev) => {
+      const newSelectedCCFs = prev.includes(tag)
+        ? prev.filter((t) => t !== tag)
+        : [...prev, tag];
+      return newSelectedCCFs;
+    });
+  }, []);
+
+  const toggleSelectedCCFs = useCallback(() => {
+    setSelectedCCFs((prev) => {
+      if (prev.length === CCF_TAGS.length) {
+        return [];
+      }
+      return CCF_TAGS;
+    });
+  }, []);
+
   const fetchConferences = useCallback(async () => {
     try {
       setLoading(true);
@@ -46,7 +66,7 @@ export default function ConferenceList() {
         pageIndex: pageIndex.toString(),
         pageSize: pageSize.toString(),
         ...(keyword && { keyword }),
-        ...(selectedCCF && { ccf: selectedCCF }),
+        ...(selectedCCFs.length > 0 && { ccf: selectedCCFs.join(",") }),
         ...(dateRange?.from && {
           startDate: format(dateRange.from, "yyyy-MM-dd"),
         }),
@@ -65,7 +85,7 @@ export default function ConferenceList() {
     } finally {
       setLoading(false);
     }
-  }, [pageIndex, pageSize, keyword, selectedCCF, dateRange, pinnedIds]);
+  }, [pageIndex, pageSize, keyword, selectedCCFs, dateRange, pinnedIds]);
 
   useEffect(() => {
     fetchConferences();
@@ -79,42 +99,38 @@ export default function ConferenceList() {
     <div className="w-full max-w-4xl mx-auto">
       <div className="mb-6 space-y-4">
         <div className="flex gap-4">
-          <input
+          <Input
             type="text"
             placeholder="Search conferences..."
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1"
           />
-          <DatePickerWithRange
-            date={dateRange}
-            onDateChange={setDateRange}
-            className="w-[300px]"
-          />
+          <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={() => setSelectedCCF("")}
-            className={`px-3 py-1 rounded-lg border ${
-              selectedCCF === ""
-                ? "bg-blue-500 text-white border-blue-500"
-                : "hover:bg-gray-100 dark:hover:bg-gray-700"
+          <Badge
+            variant={`${
+              selectedCCFs.length === CCF_TAGS.length ? "default" : "outline"
             }`}
+            onClick={() => toggleSelectedCCFs()}
+            className="px-3 py-1 rounded-lg border"
           >
             All
-          </button>
+          </Badge>
           {CCF_TAGS.map((tag) => (
-            <button
+            <Badge
               key={tag}
-              onClick={() => setSelectedCCF(tag)}
+              variant={`${selectedCCFs.includes(tag) ? "default" : "outline"}`}
+              onClick={() => toggleSelectedCCF(tag)}
               className={`px-3 py-1 rounded-lg border ${
-                selectedCCF === tag
+                selectedCCFs.includes(tag)
                   ? "bg-blue-500 text-white border-blue-500"
                   : "hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
             >
               CCF-{tag}
-            </button>
+            </Badge>
           ))}
         </div>
       </div>
@@ -134,7 +150,7 @@ export default function ConferenceList() {
               }`}
               title={pinnedIds.includes(conference.title) ? "Unpin" : "Pin"}
             >
-              <PinIcon
+              <StarIcon
                 className={`w-5 h-5 ${
                   pinnedIds.includes(conference.title) ? "fill-current" : ""
                 }`}
