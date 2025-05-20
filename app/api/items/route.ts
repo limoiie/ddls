@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readAllYamlFiles } from "@/app/lib/yaml";
-import { Conference } from "@/app/types/api";
+import { Conference, ConferenceEvent } from "@/app/types/api";
+
+function getLatestDateOfConferenceEvent(conf: ConferenceEvent) {
+  return new Date(
+    conf.timeline[0].deadline || conf.timeline[0].abstract_deadline || ""
+  );
+}
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -15,67 +21,60 @@ export async function GET(request: NextRequest) {
   // Read conferences from YAML files
   const items: Conference[] = await readAllYamlFiles();
 
-  // Filter items based on keyword, CCF, and date range if provided
-  const filteredItems: Conference[] = items.filter((item) => {
-    const matchesKeyword =
-      !keyword ||
-      item.title.toLowerCase().includes(keyword) ||
-      item.description.toLowerCase().includes(keyword) ||
-      item.sub.toLowerCase().includes(keyword) ||
-      item.confs.some(
-        (conf) =>
-          conf.place.toLowerCase().includes(keyword) ||
-          conf.id.toLowerCase().includes(keyword)
-      );
+  // Filter items based on keyword, CCF, and date range if provided and sort by the latest conference date
+  const sortedFilteredItems: Conference[] = items
+    .filter((item) => {
+      const matchesKeyword =
+        !keyword ||
+        item.title.toLowerCase().includes(keyword) ||
+        item.description.toLowerCase().includes(keyword) ||
+        item.sub.toLowerCase().includes(keyword) ||
+        item.confs.some(
+          (conf) =>
+            conf.place.toLowerCase().includes(keyword) ||
+            conf.id.toLowerCase().includes(keyword)
+        );
 
-    const matchesCCF =
-      !ccf || item.rank.ccf === ccf || (ccf === "N" && !item.rank.ccf);
+      const matchesCCF =
+        !ccf || item.rank.ccf === ccf || (ccf === "N" && !item.rank.ccf);
 
-    const matchesDateRange = !startDate || !endDate || item.confs.some((conf) => {
-      const deadlineDate = new Date(
-        conf.timeline[0].deadline || conf.timeline[0].abstract_deadline || ""
-      );
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      return deadlineDate >= start && deadlineDate <= end;
-    });
+      const matchesDateRange =
+        !startDate ||
+        !endDate ||
+        item.confs.some((conf) => {
+          const deadlineDate = getLatestDateOfConferenceEvent(conf);
+          const start = new Date(startDate);
+          const end = new Date(endDate);
+          return deadlineDate >= start && deadlineDate <= end;
+        });
 
-    return matchesKeyword && matchesCCF && matchesDateRange;
-  });
-
-  const sortedFilteredItems = filteredItems
-    // sort by the latest conference date
-    .sort((a, b) => {
-      const dateA = new Date(a.confs[0].date);
-      const dateB = new Date(b.confs[0].date);
-      return dateA.getTime() - dateB.getTime();
+      return matchesKeyword && matchesCCF && matchesDateRange;
     })
     .map((item) => {
       return {
         ...item,
         confs: item.confs
-          // filter out conferences that have already passed
+          // filter out conference events that have already passed
           .filter((conf) => {
-            const dateA = new Date(
-              conf.timeline[0].deadline ||
-                conf.timeline[0].abstract_deadline ||
-                ""
-            );
+            const dateA = getLatestDateOfConferenceEvent(conf);
             return dateA.getTime() > Date.now();
           })
+          // sort by the latest conference event date
           .sort((a, b) => {
-            const dateA = new Date(
-              a.timeline[0].deadline || a.timeline[0].abstract_deadline || ""
-            );
-            const dateB = new Date(
-              b.timeline[0].deadline || b.timeline[0].abstract_deadline || ""
-            );
+            const dateA = getLatestDateOfConferenceEvent(a);
+            const dateB = getLatestDateOfConferenceEvent(b);
             return dateB.getTime() - dateA.getTime();
           }),
       };
     })
-    // filter out items that have no conferences
-    .filter((item) => item.confs.length > 0);
+    // filter out items that have no conference events
+    .filter((item) => item.confs.length > 0)
+    // sort by the latest conference date
+    .sort((a, b) => {
+      const dateA = getLatestDateOfConferenceEvent(a.confs[0]);
+      const dateB = getLatestDateOfConferenceEvent(b.confs[0]);
+      return dateA.getTime() - dateB.getTime();
+    });
 
   // Separate pinned and unpinned items
   const pinnedItems = sortedFilteredItems.filter((item) =>

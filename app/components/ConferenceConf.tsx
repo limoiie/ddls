@@ -1,4 +1,4 @@
-import { isPast } from "date-fns";
+import { isPast, isValid } from "date-fns";
 import { Conference, ConferenceEvent, Timeline } from "../types/api";
 import Countdown from "./Countdown";
 import {
@@ -58,6 +58,7 @@ export default function ConferenceConf({
         {conf.timeline.slice(0, 1).map((timeline: Timeline, idx: number) => (
           <div key={idx} className="flex flex-col gap-2 text-sm">
             {timeline.abstract_deadline &&
+              isValid(timeline.abstract_deadline) &&
               !isPast(timeline.abstract_deadline) && (
                 <div className="flex flex-col gap-1">
                   <Countdown
@@ -70,6 +71,7 @@ export default function ConferenceConf({
                 </div>
               )}
             {(!timeline.abstract_deadline ||
+              !isValid(timeline.abstract_deadline) ||
               isPast(timeline.abstract_deadline)) &&
               timeline.deadline && (
                 <div className="flex flex-col gap-1">
