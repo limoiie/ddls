@@ -23,9 +23,24 @@ import {
   PaginationLink,
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const CCF_TAGS = ["A", "B", "C", "N"];
 const DEBOUNCE_DELAY = 300; // 300ms delay
+
+function areAllDeadlinesPassed(conference: Conference): boolean {
+  return conference.confs.every((conf) => {
+    const deadlineDate = new Date(
+      conf.timeline[0].deadline || conf.timeline[0].abstract_deadline || ""
+    );
+    return deadlineDate.getTime() < Date.now();
+  });
+}
 
 export default function ConferenceList() {
   const [conferences, setConferences] = useState<Conference[]>([]);
@@ -154,14 +169,18 @@ export default function ConferenceList() {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {loading ? (
           <div className="text-center py-8">Loading...</div>
         ) : (
           conferences.map((conference) => (
             <div
               key={conference.title.toUpperCase()}
-              className="group flex flex-col gap-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md relative"
+              className={`group flex flex-col gap-4 p-6 rounded-lg shadow-md relative ${
+                areAllDeadlinesPassed(conference)
+                  ? "bg-white dark:bg-gray-700 text-gray-400"
+                  : "bg-gray-100 dark:bg-gray-800"
+              }`}
             >
               <button
                 onClick={() => togglePin(conference.title)}
@@ -179,13 +198,29 @@ export default function ConferenceList() {
                 />
               </button>
               <div className="space-y-4">
-                {conference.confs.map((conf) => (
-                  <ConferenceConf
-                    key={conf.id}
-                    conf={conf}
-                    confSeries={conference}
-                  />
-                ))}
+                <ConferenceConf
+                  key={conference.confs[0].id}
+                  conf={conference.confs[0]}
+                  confSeries={conference}
+                />
+                {conference.confs.length > 1 && (
+                  <Accordion type="single" collapsible>
+                    <AccordionItem key="other-confs" value="other-confs">
+                      <AccordionTrigger className="py-0">
+                        History Conferences
+                      </AccordionTrigger>
+                      <AccordionContent className="flex flex-col gap-4 pt-4">
+                        {conference.confs.slice(1).map((conf) => (
+                          <ConferenceConf
+                            key={conf.id}
+                            conf={conf}
+                            confSeries={conference}
+                          />
+                        ))}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                )}
               </div>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline">{conference.sub}</Badge>

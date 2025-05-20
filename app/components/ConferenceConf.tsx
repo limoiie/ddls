@@ -17,6 +17,9 @@ export default function ConferenceConf({
   conf,
   confSeries,
 }: ConferenceConfProps) {
+  const isOutdated = (deadline: Date | string | number | undefined) => {
+    return !deadline || !isValid(new Date(deadline)) || isPast(deadline);
+  };
   return (
     <div key={conf.id} className="flex flex-row gap-4">
       <div className="w-1/2 flex justify-between items-start">
@@ -57,25 +60,21 @@ export default function ConferenceConf({
       <div className="flex flex-col gap-4">
         {conf.timeline.slice(0, 1).map((timeline: Timeline, idx: number) => (
           <div key={idx} className="flex flex-col gap-2 text-sm">
-            {timeline.abstract_deadline &&
-              isValid(timeline.abstract_deadline) &&
-              !isPast(timeline.abstract_deadline) && (
+            {!isOutdated(timeline.abstract_deadline) && (
+              <div className="flex flex-col gap-1">
+                <Countdown
+                  deadline={timeline.abstract_deadline!}
+                  type="abstract"
+                />
+                <p className="text-gray-600 dark:text-gray-400">
+                  Abstract Deadline: {timeline.abstract_deadline}
+                </p>
+              </div>
+            )}
+            {isOutdated(timeline.abstract_deadline) &&
+              !isOutdated(timeline.deadline) && (
                 <div className="flex flex-col gap-1">
-                  <Countdown
-                    deadline={timeline.abstract_deadline}
-                    type="abstract"
-                  />
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Abstract Deadline: {timeline.abstract_deadline}
-                  </p>
-                </div>
-              )}
-            {(!timeline.abstract_deadline ||
-              !isValid(timeline.abstract_deadline) ||
-              isPast(timeline.abstract_deadline)) &&
-              timeline.deadline && (
-                <div className="flex flex-col gap-1">
-                  <Countdown deadline={timeline.deadline} type="paper" />
+                  <Countdown deadline={timeline.deadline!} type="paper" />
                   <p className="text-gray-600 dark:text-gray-400">
                     Paper Deadline: {timeline.deadline}
                   </p>

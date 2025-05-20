@@ -57,10 +57,10 @@ export async function GET(request: NextRequest) {
         ...item,
         confs: item.confs
           // filter out conference events that have already passed
-          .filter((conf) => {
-            const dateA = getLatestDateOfConferenceEvent(conf);
-            return dateA.getTime() > Date.now();
-          })
+          // .filter((conf) => {
+          //   const dateA = getLatestDateOfConferenceEvent(conf);
+          //   return dateA.getTime() > Date.now();
+          // })
           // sort by the latest conference event date
           .sort((a, b) => {
             const dateA = getLatestDateOfConferenceEvent(a);
