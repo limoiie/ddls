@@ -17,17 +17,15 @@ interface ConferenceConfProps {
   confSeries: Conference;
 }
 
-function areAllDeadlinesPassed(confSeries: Conference): boolean {
-  return confSeries.confs.every((conf) => {
-    const ianaTimezone = getIANATimezone(conf.timezone);
-    const deadlineDate = moment
-      .tz(
-        conf.timeline[0].deadline || conf.timeline[0].abstract_deadline || "",
-        ianaTimezone
-      )
-      .toDate();
-    return deadlineDate.getTime() < Date.now();
-  });
+function isDeadlinePassed(conf: ConferenceEvent) {
+  const ianaTimezone = getIANATimezone(conf.timezone);
+  const deadlineDate = moment
+    .tz(
+      conf.timeline[0].deadline || conf.timeline[0].abstract_deadline || "",
+      ianaTimezone
+    )
+    .toDate();
+  return deadlineDate.getTime() < Date.now();
 }
 
 function formatDeadline(deadline: string, timezone: string): JSX.Element {
@@ -67,13 +65,11 @@ export default function ConferenceConf({
     const date = moment.tz(deadline.toString(), ianaTimezone).toDate();
     return !isValid(date) || isPast(date);
   };
-  const allDeadlinesPassed = areAllDeadlinesPassed(confSeries);
+  const passed = isDeadlinePassed(conf);
   return (
     <div
       key={conf.id}
-      className={`flex flex-row gap-4 ${
-        allDeadlinesPassed ? "opacity-50" : ""
-      }`}
+      className={`flex flex-row gap-4 ${passed ? "opacity-70" : ""}`}
     >
       <div className="w-1/2 flex justify-between items-start">
         <div>
@@ -83,9 +79,7 @@ export default function ConferenceConf({
                 <TooltipTrigger asChild>
                   <h3
                     className={`font-semibold ${
-                      allDeadlinesPassed
-                        ? "text-gray-500 dark:text-gray-400"
-                        : ""
+                      passed ? "text-gray-500 dark:text-gray-400" : ""
                     }`}
                   >
                     {confSeries.title.toUpperCase() + " " + conf.year}
@@ -98,7 +92,7 @@ export default function ConferenceConf({
             </TooltipProvider>
             <p
               className={`text-sm ${
-                allDeadlinesPassed
+                passed
                   ? "text-gray-400 dark:text-gray-500"
                   : "text-gray-600 dark:text-gray-400"
               }`}
@@ -108,7 +102,7 @@ export default function ConferenceConf({
           </div>
           <p
             className={`text-sm ${
-              allDeadlinesPassed
+              passed
                 ? "text-gray-400 dark:text-gray-500"
                 : "text-gray-600 dark:text-gray-400"
             }`}
@@ -118,7 +112,7 @@ export default function ConferenceConf({
           <div className="flex flex-row gap-1 text-sm">
             <p
               className={`${
-                allDeadlinesPassed
+                passed
                   ? "text-gray-400 dark:text-gray-500"
                   : "text-gray-600 dark:text-gray-400"
               }`}
@@ -130,7 +124,7 @@ export default function ConferenceConf({
               target="_blank"
               rel="noopener noreferrer"
               className={`${
-                allDeadlinesPassed
+                passed
                   ? "text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400"
                   : "text-blue-600 dark:text-blue-400 hover:underline"
               }`}
@@ -151,7 +145,7 @@ export default function ConferenceConf({
                 />
                 <div
                   className={`${
-                    allDeadlinesPassed
+                    passed
                       ? "text-gray-400 dark:text-gray-500"
                       : "text-gray-600 dark:text-gray-400"
                   }`}
@@ -167,7 +161,7 @@ export default function ConferenceConf({
                 <Countdown deadline={timeline.deadline!} type="paper" />
                 <div
                   className={`${
-                    allDeadlinesPassed
+                    passed
                       ? "text-gray-400 dark:text-gray-500"
                       : "text-gray-600 dark:text-gray-400"
                   }`}
@@ -182,7 +176,7 @@ export default function ConferenceConf({
               <div className="flex flex-col gap-1">
                 <div
                   className={`${
-                    allDeadlinesPassed
+                    passed
                       ? "text-gray-400 dark:text-gray-500"
                       : "text-gray-600 dark:text-gray-400"
                   }`}
