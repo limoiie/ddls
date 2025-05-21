@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
-import { ChevronsLeftIcon, ChevronsRightIcon, StarIcon } from "lucide-react";
+import { StarIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -16,6 +16,7 @@ import {
   PaginationNext,
   PaginationPrevious,
   PaginationLink,
+  PaginationEllipsis,
 } from "@/components/ui/pagination";
 import {
   Accordion,
@@ -24,16 +25,24 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { FilterBadgeGroup } from "./FilterBadgeGroup";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const CCF_TAGS = ["A", "B", "C", "N"];
 const DEBOUNCE_DELAY = 300; // 300ms delay
 
 export default function ConferenceList() {
+  const shownPageHalfWinSize = 2;
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(6);
   const [totalPages, setTotalPages] = useState(0);
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
@@ -48,6 +57,7 @@ export default function ConferenceList() {
     }
     return [];
   });
+  const [pageInputValue, setPageInputValue] = useState("1");
 
   // Add debounce effect for keyword
   useEffect(() => {
@@ -257,26 +267,94 @@ export default function ConferenceList() {
 
       <Pagination className="mt-8 flex justify-center gap-2">
         <PaginationContent>
+          {/* Page size selector */}
           <PaginationItem>
+            <div className="flex items-center gap-2 px-2">
+              <span className="text-sm">Page size</span>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(value: string) => {
+                  const newSize = parseInt(value);
+                  setPageSize(newSize);
+                  setPageIndex(0); // Reset to first page when changing page size
+                }}
+              >
+                <SelectTrigger className="w-20 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </PaginationItem>
+
+          {/* <PaginationItem>
             <PaginationLink onClick={() => setPageIndex(0)}>
               <ChevronsLeftIcon className="size-4" />
             </PaginationLink>
-          </PaginationItem>
+          </PaginationItem> */}
           <PaginationItem>
             <PaginationPrevious
               onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
             />
           </PaginationItem>
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <PaginationItem key={i}>
+
+          {/* First page */}
+          <PaginationItem>
+            <PaginationLink
+              onClick={() => setPageIndex(0)}
+              isActive={pageIndex === 0}
+            >
+              1
+            </PaginationLink>
+          </PaginationItem>
+
+          {/* Left ellipsis */}
+          {pageIndex > 1 + shownPageHalfWinSize && (
+            <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>
+          )}
+
+          {/* Pages around current page */}
+          {Array.from({ length: totalPages }).map((_, i) => {
+            if (i === 0 || i === totalPages - 1) return null; // Skip first and last
+            if (Math.abs(i - pageIndex) > shownPageHalfWinSize) return null; // Show only pages around current
+            return (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  onClick={() => setPageIndex(i)}
+                  isActive={pageIndex === i}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            );
+          })}
+
+          {/* Right ellipsis */}
+          {pageIndex < totalPages - 2 - shownPageHalfWinSize && (
+            <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>
+          )}
+
+          {/* Last page */}
+          {totalPages > 1 && (
+            <PaginationItem>
               <PaginationLink
-                onClick={() => setPageIndex(i)}
-                isActive={pageIndex === i}
+                onClick={() => setPageIndex(totalPages - 1)}
+                isActive={pageIndex === totalPages - 1}
               >
-                {i + 1}
+                {totalPages}
               </PaginationLink>
             </PaginationItem>
-          ))}
+          )}
+
           <PaginationItem>
             <PaginationNext
               onClick={() =>
@@ -284,10 +362,35 @@ export default function ConferenceList() {
               }
             />
           </PaginationItem>
-          <PaginationItem>
+          {/* <PaginationItem>
             <PaginationLink onClick={() => setPageIndex(totalPages - 1)}>
               <ChevronsRightIcon className="size-4" />
             </PaginationLink>
+          </PaginationItem> */}
+
+          {/* Page input */}
+          <PaginationItem>
+            <div className="flex items-center gap-2 px-2">
+              <span className="text-sm">Go to</span>
+              <Input
+                type="number"
+                min={1}
+                max={totalPages}
+                value={pageInputValue}
+                onChange={(e) => {
+                  setPageInputValue(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const value = parseInt(pageInputValue);
+                    if (value >= 1 && value <= totalPages) {
+                      setPageIndex(value - 1);
+                    }
+                  }
+                }}
+                className="w-16 h-8"
+              />
+            </div>
           </PaginationItem>
         </PaginationContent>
       </Pagination>
