@@ -200,11 +200,22 @@ export default function ConferenceList() {
                   id="custom-type-mode"
                   variant="outline"
                   onClick={() => setCustomTypeMode(!customTypeMode)}
+                  className={`${
+                    customTypeMode ? "bg-blue-100 border-blue-200" : ""
+                  }`}
                 >
-                  <CopyrightIcon className="size-4" />
+                  <CopyrightIcon
+                    className={`size-4 ${
+                      customTypeMode ? "text-blue-500" : ""
+                    }`}
+                  />
                 </Toggle>
               </TooltipTrigger>
-              <TooltipContent>Show full CCF conferences</TooltipContent>
+              <TooltipContent>
+                {customTypeMode
+                  ? "Show full CCF conferences"
+                  : "Show custom CCF conferences"}
+              </TooltipContent>
             </Tooltip>
           </TooltipProvider>
           <Input
