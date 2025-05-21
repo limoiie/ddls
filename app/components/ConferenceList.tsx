@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
-import { StarIcon } from "lucide-react";
+import { CopyrightIcon, StarIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -33,6 +33,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Toggle } from "@/components/ui/toggle";
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const CCF_TAGS = ["A", "B", "C", "N"];
 const DEBOUNCE_DELAY = 300; // 300ms delay
@@ -47,6 +54,7 @@ export default function ConferenceList() {
   const [totalPages, setTotalPages] = useState(0);
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
+  const [customTypeMode, setCustomTypeMode] = useState(true);
   const [types, setTypes] = useState<ConferenceType[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCCFs, setSelectedCCFs] = useState<string[]>([]);
@@ -73,7 +81,10 @@ export default function ConferenceList() {
   useEffect(() => {
     const loadTypes = async () => {
       try {
-        const response = await fetch("/api/types");
+        const params = new URLSearchParams({
+          customTypeMode: customTypeMode.toString(),
+        });
+        const response = await fetch(`/api/types?${params.toString()}`);
         if (!response.ok) {
           throw new Error("Failed to load conference types");
         }
@@ -84,7 +95,7 @@ export default function ConferenceList() {
       }
     };
     loadTypes();
-  }, []);
+  }, [customTypeMode]);
 
   const togglePin = useCallback((title: string) => {
     setPinnedIds((prev) => {
@@ -124,6 +135,7 @@ export default function ConferenceList() {
         pageIndex: pageIndex.toString(),
         pageSize: pageSize.toString(),
         pinnedIds: pinnedIds.join(","),
+        customTypeMode: customTypeMode.toString(),
       });
 
       if (dateRange?.from) {
@@ -154,6 +166,7 @@ export default function ConferenceList() {
     pageSize,
     pinnedIds,
     dateRange,
+    customTypeMode,
   ]);
 
   useEffect(() => {
@@ -167,6 +180,20 @@ export default function ConferenceList() {
     <div className="w-full max-w-4xl mx-auto">
       <div className="mb-6 space-y-4">
         <div className="flex gap-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Toggle
+                  id="custom-type-mode"
+                  variant="outline"
+                  onClick={() => setCustomTypeMode(!customTypeMode)}
+                >
+                  <CopyrightIcon className="size-4" />
+                </Toggle>
+              </TooltipTrigger>
+              <TooltipContent>Show full CCF conferences</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Input
             type="text"
             placeholder="Search conferences..."

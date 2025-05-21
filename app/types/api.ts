@@ -42,3 +42,10 @@ export interface ConferenceType {
   name_en: string;
   sub: string;
 }
+
+export interface CustomConferenceType {
+  name: string;
+  name_en: string;
+  sub: string;
+  confs: string[];
+}

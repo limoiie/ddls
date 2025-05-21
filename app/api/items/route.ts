@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readAllConferenceYamlFiles } from "@/app/lib/yaml";
+import {
+  readAllConferenceYamlFiles,
+  readCustomTypesYamlFile,
+} from "@/app/lib/yaml";
 import { Conference, ConferenceEvent } from "@/app/types/api";
 import { isPast } from "date-fns";
 import { getIANATimezone } from "@/app/lib/date";
@@ -38,6 +41,7 @@ export async function GET(request: NextRequest) {
       .get("types")
       ?.split(",")
       .filter((t) => t !== "") || [];
+  const customTypeMode = searchParams.get("customTypeMode") === "true";
   const startDate = searchParams.get("startDate") || "";
   const endDate = searchParams.get("endDate") || "";
   const pinnedIds = searchParams.get("pinnedIds")?.split(",") || [];
@@ -47,8 +51,28 @@ export async function GET(request: NextRequest) {
   // Read conferences from YAML files
   const items: Conference[] = await readAllConferenceYamlFiles();
 
+  // Read custom types from YAML file, which maps conf title to its custom types
+  const customTypes: Record<string, string> = (
+    await readCustomTypesYamlFile()
+  ).reduce((acc, it) => {
+    it.confs.forEach((conf) => {
+      acc[conf] = !acc[conf] ? it.sub : "," + it.sub;
+    });
+    return acc;
+  }, {} as Record<string, string>);
+
   // Filter items based on keyword, CCF, and date range if provided and sort by the latest conference date
   const sortedFilteredItems: Conference[] = items
+    // Overwrite types if customTypeMode is enabled
+    .map((item) => {
+      return customTypeMode
+        ? {
+            ...item,
+            sub: customTypes[item.title] || "",
+          }
+        : item;
+    })
+    .filter((item) => item.sub !== "")
     .filter((item) => {
       const matchesKeyword =
         !keyword ||
@@ -61,7 +85,9 @@ export async function GET(request: NextRequest) {
             conf.id.toLowerCase().includes(keyword)
         );
 
-      const matchesTypes = types.length === 0 || types.includes(item.sub);
+      const matchesTypes =
+        types.length === 0 ||
+        item.sub.split(",").some((sub) => types.includes(sub));
 
       const matchesCCF =
         ccf.length === 0 ||
