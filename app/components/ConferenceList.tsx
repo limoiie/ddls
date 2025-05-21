@@ -7,12 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
-import {
-  BrushCleaningIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
-  StarIcon,
-} from "lucide-react";
+import { ChevronsLeftIcon, ChevronsRightIcon, StarIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -22,19 +17,13 @@ import {
   PaginationPrevious,
   PaginationLink,
 } from "@/components/ui/pagination";
-import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { FilterBadgeGroup } from "./FilterBadgeGroup";
 
 const CCF_TAGS = ["A", "B", "C", "N"];
 const DEBOUNCE_DELAY = 300; // 300ms delay
@@ -176,63 +165,26 @@ export default function ConferenceList() {
           />
           <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
         </div>
-        <div className="flex flex-wrap gap-2">
-          {CCF_TAGS.map((tag) => (
-            <Badge
-              key={tag}
-              variant={`${selectedCCFs.includes(tag) ? "default" : "outline"}`}
-              onClick={() => toggleSelectedCCF(tag)}
-              className={`px-3 py-1 rounded-lg border ${
-                selectedCCFs.includes(tag)
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-            >
-              CCF-{tag}
-            </Badge>
-          ))}
-          <Button
-            variant="ghost"
-            onClick={() => setSelectedCCFs([])}
-            className={`${selectedCCFs.length > 0 ? "visible" : "invisible"}`}
-          >
-            <BrushCleaningIcon className="size-4" />
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {types.map((type) => (
-            <Badge
-              key={type.sub}
-              variant={`${
-                selectedTypes.includes(type.sub) ? "default" : "outline"
-              }`}
-              onClick={() => toggleSelectedType(type.sub)}
-              className={`px-3 py-1 rounded-lg border ${
-                selectedTypes.includes(type.sub)
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-            >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>{type.sub}</span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {type.name} ({type.name_en})
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </Badge>
-          ))}
-          <Button
-            variant="ghost"
-            onClick={() => setSelectedTypes([])}
-            className={`${selectedTypes.length > 0 ? "visible" : "invisible"}`}
-          >
-            <BrushCleaningIcon className="size-4" />
-          </Button>
-        </div>
+        <FilterBadgeGroup
+          items={CCF_TAGS.map((tag) => ({
+            id: tag,
+            label: `CCF-${tag}`,
+          }))}
+          selectedItems={selectedCCFs}
+          onToggle={toggleSelectedCCF}
+          onClear={() => setSelectedCCFs([])}
+        />
+        <FilterBadgeGroup
+          items={types.map((type) => ({
+            id: type.sub,
+            label: type.sub,
+            tooltip: `${type.name} (${type.name_en})`,
+          }))}
+          selectedItems={selectedTypes}
+          onToggle={toggleSelectedType}
+          onClear={() => setSelectedTypes([])}
+          showTooltip={true}
+        />
       </div>
 
       <div className="space-y-4">

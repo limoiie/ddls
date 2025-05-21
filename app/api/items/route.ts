@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 
       const matchesCCF =
         ccf.length === 0 ||
-        (ccf.includes(item.rank.ccf) && item.rank.ccf !== "") ||
+        ccf.includes(item.rank.ccf) ||
         (ccf.includes("N") && !item.rank.ccf);
 
       const matchesDateRange =
