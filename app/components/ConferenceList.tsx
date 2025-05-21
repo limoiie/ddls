@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 
 const CCF_TAGS = ["A", "B", "C", "N"];
 const DEBOUNCE_DELAY = 300; // 300ms delay
@@ -42,7 +43,7 @@ export default function ConferenceList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(6);
+  const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
@@ -208,7 +209,7 @@ export default function ConferenceList() {
             >
               <button
                 onClick={() => togglePin(conference.title)}
-                className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${
+                className={`absolute top-4 right-4 p-2 rounded-full transition-colors z-10 pointer-events-auto ${
                   pinnedIds.includes(conference.title)
                     ? "text-blue-500 hover:text-blue-600"
                     : "text-gray-400 hover:text-gray-500 opacity-0 group-hover:opacity-100"
@@ -233,13 +234,15 @@ export default function ConferenceList() {
                       <AccordionTrigger className="py-0">
                         History Conferences
                       </AccordionTrigger>
-                      <AccordionContent className="flex flex-col gap-6 pt-6">
+                      <AccordionContent className="flex flex-col gap-3 pt-6">
                         {conference.confs.slice(1).map((conf) => (
-                          <ConferenceConf
-                            key={conf.id}
-                            conf={conf}
-                            confSeries={conference}
-                          />
+                          <div key={conf.id} className="flex flex-col gap-3">
+                            <Separator />
+                            <ConferenceConf
+                              conf={conf}
+                              confSeries={conference}
+                            />
+                          </div>
                         ))}
                       </AccordionContent>
                     </AccordionItem>
