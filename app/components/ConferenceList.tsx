@@ -223,7 +223,7 @@ export default function ConferenceList() {
                       <AccordionTrigger className="py-0">
                         History Conferences
                       </AccordionTrigger>
-                      <AccordionContent className="flex flex-col gap-4 pt-4">
+                      <AccordionContent className="flex flex-col gap-6 pt-6">
                         {conference.confs.slice(1).map((conf) => (
                           <ConferenceConf
                             key={conf.id}

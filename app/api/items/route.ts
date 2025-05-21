@@ -5,11 +5,21 @@ import { isPast } from "date-fns";
 import { getIANATimezone } from "@/app/lib/date";
 import moment from "moment-timezone";
 
-function getLatestDateOfConferenceEvent(conf: ConferenceEvent) {
+function getLatestDateOfConferenceEvent(conf: ConferenceEvent): Date {
   const ianaTimezone = getIANATimezone(conf.timezone);
+  const latestTimeline = conf.timeline[0];
+  if (
+    (!latestTimeline.deadline || latestTimeline.deadline === "TBD") &&
+    (!latestTimeline.abstract_deadline ||
+      latestTimeline.abstract_deadline === "TBD")
+  ) {
+    // If the deadline and abstract deadline are both TBD, return a date far in the future
+    return new Date("9999-12-31");
+  }
+
   return moment
     .tz(
-      conf.timeline[0].deadline || conf.timeline[0].abstract_deadline || "",
+      latestTimeline.deadline || latestTimeline.abstract_deadline || "",
       ianaTimezone
     )
     .toDate();
@@ -74,11 +84,6 @@ export async function GET(request: NextRequest) {
       return {
         ...item,
         confs: item.confs
-          // filter out conference events that have already passed
-          // .filter((conf) => {
-          //   const dateA = getLatestDateOfConferenceEvent(conf);
-          //   return dateA.getTime() > Date.now();
-          // })
           // sort by the latest conference event date
           .sort((a, b) => {
             const dateA = getLatestDateOfConferenceEvent(a);

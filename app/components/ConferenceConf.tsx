@@ -29,6 +29,10 @@ function isDeadlinePassed(conf: ConferenceEvent) {
 }
 
 function formatDeadline(deadline: string, timezone: string): JSX.Element {
+  if (deadline === "TBD") {
+    return <span>TBD</span>;
+  }
+
   const ianaTimezone = getIANATimezone(timezone);
   const date = moment.tz(deadline, ianaTimezone).toDate();
   const shanghaiTime = formatInTimeZone(
@@ -69,8 +73,17 @@ export default function ConferenceConf({
   return (
     <div
       key={conf.id}
-      className={`flex flex-row gap-4 ${passed ? "opacity-70" : ""}`}
+      className={`flex flex-row gap-4 relative ${passed ? "opacity-70" : ""}`}
     >
+      {passed && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="transform rotate-340">
+            <span className="text-3xl font-bold text-red-500 opacity-50">
+              PASSED
+            </span>
+          </div>
+        </div>
+      )}
       <div className="w-1/2 flex justify-between items-start">
         <div>
           <div className="flex flex-row gap-4 items-end">
