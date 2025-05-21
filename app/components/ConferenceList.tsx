@@ -47,6 +47,7 @@ const DEBOUNCE_DELAY = 300; // 300ms delay
 export default function ConferenceList() {
   const shownPageHalfWinSize = 2;
   const [conferences, setConferences] = useState<Conference[]>([]);
+  const [types, setTypes] = useState<ConferenceType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
@@ -55,18 +56,64 @@ export default function ConferenceList() {
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [customTypeMode, setCustomTypeMode] = useState(true);
-  const [types, setTypes] = useState<ConferenceType[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCCFs, setSelectedCCFs] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("pinnedConferences");
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
+  const [pinnedIds, setPinnedIds] = useState<string[]>([]);
   const [pageInputValue, setPageInputValue] = useState("1");
+
+  // Initialize state from localStorage on client-side
+  useEffect(() => {
+    const savedCustomTypeMode = localStorage.getItem("customTypeMode");
+    if (savedCustomTypeMode) {
+      setCustomTypeMode(JSON.parse(savedCustomTypeMode));
+    }
+
+    const savedSelectedTypes = localStorage.getItem("selectedTypes");
+    if (savedSelectedTypes) {
+      setSelectedTypes(JSON.parse(savedSelectedTypes));
+    }
+
+    const savedSelectedCCFs = localStorage.getItem("selectedCCFs");
+    if (savedSelectedCCFs) {
+      setSelectedCCFs(JSON.parse(savedSelectedCCFs));
+    }
+
+    const savedDateRange = localStorage.getItem("dateRange");
+    if (savedDateRange) {
+      setDateRange(JSON.parse(savedDateRange));
+    }
+
+    const savedPinnedIds = localStorage.getItem("pinnedConferences");
+    if (savedPinnedIds) {
+      setPinnedIds(JSON.parse(savedPinnedIds));
+    }
+  }, []);
+
+  // Save filter options to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem("customTypeMode", JSON.stringify(customTypeMode));
+  }, [customTypeMode]);
+
+  useEffect(() => {
+    localStorage.setItem("selectedTypes", JSON.stringify(selectedTypes));
+  }, [selectedTypes]);
+
+  useEffect(() => {
+    localStorage.setItem("selectedCCFs", JSON.stringify(selectedCCFs));
+  }, [selectedCCFs]);
+
+  useEffect(() => {
+    if (dateRange) {
+      localStorage.setItem("dateRange", JSON.stringify(dateRange));
+    } else {
+      localStorage.removeItem("dateRange");
+    }
+  }, [dateRange]);
+
+  useEffect(() => {
+    localStorage.setItem("pinnedConferences", JSON.stringify(pinnedIds));
+  }, [pinnedIds]);
 
   // Reset page index when filters change
   useEffect(() => {
