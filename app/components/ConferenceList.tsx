@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
-import { CopyrightIcon, StarIcon } from "lucide-react";
+import { CopyrightIcon, PinIcon, StarIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -237,14 +237,14 @@ export default function ConferenceList() {
             >
               <button
                 onClick={() => togglePin(conference.title)}
-                className={`absolute top-4 right-4 p-2 rounded-full transition-colors z-10 pointer-events-auto ${
+                className={`absolute top-0 left-0 p-2 rounded-full transition-colors z-10 pointer-events-auto rotate-320 ${
                   pinnedIds.includes(conference.title)
                     ? "text-blue-500 hover:text-blue-600"
-                    : "text-gray-400 hover:text-gray-500 opacity-0 group-hover:opacity-100"
+                    : "text-gray-400 hover:text-gray-500 opacity-100 sm:opacity-0 group-hover:opacity-100"
                 }`}
                 title={pinnedIds.includes(conference.title) ? "Unpin" : "Pin"}
               >
-                <StarIcon
+                <PinIcon
                   className={`w-5 h-5 ${
                     pinnedIds.includes(conference.title) ? "fill-current" : ""
                   }`}
