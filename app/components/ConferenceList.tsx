@@ -179,7 +179,7 @@ export default function ConferenceList() {
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div className="mb-6 space-y-4">
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -200,6 +200,7 @@ export default function ConferenceList() {
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             className="flex-1"
+            style={{ minWidth: "200px" }}
           />
           <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
         </div>

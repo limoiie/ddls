@@ -85,8 +85,8 @@ export default function ConferenceConf({
         </div>
       )}
       <div className="w-1/2 flex justify-between items-start">
-        <div>
-          <div className="flex flex-row gap-4 items-end">
+        <div className="w-full flex flex-col">
+          <div className="flex flex-row flex-wrap gap-4 items-end">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -136,7 +136,7 @@ export default function ConferenceConf({
               href={conf.link}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${
+              className={`overflow-hidden text-ellipsis whitespace-nowrap ${
                 passed
                   ? "text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400"
                   : "text-blue-600 dark:text-blue-400 hover:underline"
@@ -147,7 +147,7 @@ export default function ConferenceConf({
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="w-1/2 flex flex-col gap-4">
         {conf.timeline.slice(0, 1).map((timeline: Timeline, idx: number) => (
           <div key={idx} className="flex flex-col gap-2 text-sm">
             {!isOutdated(timeline.abstract_deadline) ? (
@@ -163,7 +163,7 @@ export default function ConferenceConf({
                       : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
-                  <div className="flex flex-row gap-1">
+                  <div className="flex flex-row flex-wrap gap-1">
                     Abstract Deadline:{" "}
                     {formatDeadline(timeline.abstract_deadline!, conf.timezone)}
                   </div>
@@ -179,7 +179,7 @@ export default function ConferenceConf({
                       : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
-                  <div className="flex flex-row gap-1">
+                  <div className="flex flex-row flex-wrap gap-1">
                     Paper Deadline:{" "}
                     {formatDeadline(timeline.deadline!, conf.timezone)}
                   </div>
@@ -194,7 +194,7 @@ export default function ConferenceConf({
                       : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
-                  <div className="flex flex-row gap-1">
+                  <div className="flex flex-row flex-wrap gap-1">
                     Paper Deadline:{" "}
                     {formatDeadline(timeline.deadline!, conf.timezone)}
                   </div>
