@@ -16,12 +16,11 @@
     - USS
     - ACSAC
     - ESORICS
-    - DSN
-    - RAID
     - ASIACCS
     - DIMVA
     - DFRWS
     - WASA
+    - HPCC
     - MILCOM
 - name: 计算机视觉
   name_en: Computer Vision
@@ -39,3 +38,5 @@
     - AAAI
     - ECAI
     - IJCAI
+    - ICML
+    - ICLR
