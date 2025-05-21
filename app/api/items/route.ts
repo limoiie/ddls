@@ -20,12 +20,14 @@ function getLatestDateOfConferenceEvent(conf: ConferenceEvent): Date {
     return new Date("9999-12-31");
   }
 
-  return moment
-    .tz(
-      latestTimeline.abstract_deadline || latestTimeline.deadline || "",
-      ianaTimezone
-    )
-    .toDate();
+  const abstractDeadline =
+    latestTimeline.abstract_deadline === "TBD"
+      ? ""
+      : latestTimeline.abstract_deadline;
+  const deadline =
+    latestTimeline.deadline === "TBD" ? "" : latestTimeline.deadline;
+
+  return moment.tz(abstractDeadline || deadline || "", ianaTimezone).toDate();
 }
 
 export async function GET(request: NextRequest) {
