@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
-import { CopyrightIcon, StarIcon } from "lucide-react";
+import { CopyrightIcon, PinIcon, StarIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -244,7 +244,7 @@ export default function ConferenceList() {
                 }`}
                 title={pinnedIds.includes(conference.title) ? "Unpin" : "Pin"}
               >
-                <StarIcon
+                <PinIcon
                   className={`w-5 h-5 ${
                     pinnedIds.includes(conference.title) ? "fill-current" : ""
                   }`}
