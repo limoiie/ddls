@@ -22,7 +22,7 @@ function getLatestDateOfConferenceEvent(conf: ConferenceEvent): Date {
 
   return moment
     .tz(
-      latestTimeline.deadline || latestTimeline.abstract_deadline || "",
+      latestTimeline.abstract_deadline || latestTimeline.deadline || "",
       ianaTimezone
     )
     .toDate();
