@@ -1,0 +1,25 @@
+- title: MILCOM
+  description: IEEE Military Communications Conference
+  sub: SC
+  rank:
+    ccf: N
+    core: N
+    thcpl: N
+  dblp: milcom
+  confs:
+    - year: 2024
+      id: milcom24
+      link: https://milcom2024.ieee-milcom.org/
+      timeline:
+        - deadline: "2024-06-10 23:59:59"
+      timezone: UTC-12
+      date: October 28-November 1, 2024
+      place: Washington, DC, USA
+    - year: 2025
+      id: milcom25
+      link: https://milcom2025.ieee-milcom.org/
+      timeline:
+        - deadline: "2025-06-01 23:59:59"
+      timezone: UTC-12
+      date: October 6-10, 2025
+      place: Los Angeles, CA, USA

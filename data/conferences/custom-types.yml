@@ -5,22 +5,21 @@
     - ACL
     - COLING
     - NeurIPS
-    - IJCNLP
+    - EMNLP
 - name: 网络与信息安全
   name_en: Cyber Security
   sub: Security
   confs:
-    - CCS
-    - NDSS
-    - S&P
-    - USENIX Security
     - ACSAC
-    - ESORICS
-    - ASIACCS
-    - DIMVA
+    # - ASIACCS
     - DFRWS
-    - WASA
-    - HPCC
+    # - DIMVA
+    - ESORICS
+    - ICASSP
+    - ICDF2C
+    - ICME
+    - IFIP WG 11.9
+    - ISCC
     - MILCOM
 - name: 计算机视觉
   name_en: Computer Vision
@@ -30,7 +29,6 @@
     - CVPR
     - ECCV
     - ICCV
-    - ICPR
 - name: 人工智能
   name_en: Artificial Intelligence
   sub: AI
@@ -39,4 +37,6 @@
     - ECAI
     - IJCAI
     - ICML
-    - ICLR
+    # - ICLR
+    - KSEM
+    - WWWW
