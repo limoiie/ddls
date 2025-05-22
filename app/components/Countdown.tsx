@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 interface CountdownProps {
-  deadline: string;
+  deadline: Date;
   type: "abstract" | "paper";
 }
 
@@ -17,9 +17,8 @@ export default function Countdown({ deadline, type }: CountdownProps) {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const deadlineDate = new Date(deadline);
       const now = new Date();
-      const difference = deadlineDate.getTime() - now.getTime();
+      const difference = deadline.getTime() - now.getTime();
 
       if (difference <= 0) {
         setTimeLeft(null);

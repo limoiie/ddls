@@ -41,7 +41,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const CCF_TAGS = ["A", "B", "C", "N"];
+const CCF_TAGS = ["A", "B", "C"];
 const DEBOUNCE_DELAY = 300; // 300ms delay
 
 export default function ConferenceList() {

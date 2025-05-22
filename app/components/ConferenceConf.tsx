@@ -28,47 +28,53 @@ function isDeadlinePassed(conf: ConferenceEvent) {
   return deadlineDate.getTime() < Date.now();
 }
 
-function formatDeadline(deadline: string, timezone: string): JSX.Element {
-  if (deadline === "TBD") {
-    return <span>TBD</span>;
-  }
-
-  const ianaTimezone = getIANATimezone(timezone);
-  const date = moment.tz(deadline, ianaTimezone).toDate();
-  const shanghaiTime = formatInTimeZone(
-    date,
-    "Asia/Shanghai",
-    "yyyy-MM-dd HH:mm:ss"
-  );
-  const originalTime = formatInTimeZone(
-    date,
-    ianaTimezone,
-    "yyyy-MM-dd HH:mm:ss"
-  );
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span>{shanghaiTime} Asia/Shanghai</span>
-        </TooltipTrigger>
-        <TooltipContent>
-          {originalTime} {ianaTimezone} ({timezone})
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
-
 export default function ConferenceConf({
   conf,
   confSeries,
 }: ConferenceConfProps) {
-  const isOutdated = (deadline: Date | string | number | undefined) => {
-    if (!deadline) return true;
-    const ianaTimezone = getIANATimezone(conf.timezone);
-    const date = moment.tz(deadline.toString(), ianaTimezone).toDate();
-    return !isValid(date) || isPast(date);
-  };
+  const ianaTimezone = getIANATimezone(conf.timezone);
+
+  const toDate = (
+    deadline: Date | string | number | undefined | null
+  ): Date | "TBD" | null =>
+    deadline
+      ? deadline === "TBD"
+        ? "TBD"
+        : moment.tz(deadline.toString(), ianaTimezone).toDate()
+      : null;
+
+  function formatDeadline(
+    deadline: Date | string | undefined | null
+  ): JSX.Element {
+    if (deadline === "TBD") {
+      return <span>TBD</span>;
+    }
+
+    const date = moment.tz(deadline, ianaTimezone).toDate();
+    const shanghaiTime = formatInTimeZone(
+      date,
+      "Asia/Shanghai",
+      "yyyy-MM-dd HH:mm:ss"
+    );
+    const originalTime = formatInTimeZone(
+      date,
+      ianaTimezone,
+      "yyyy-MM-dd HH:mm:ss"
+    );
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>{shanghaiTime} Asia/Shanghai</span>
+          </TooltipTrigger>
+          <TooltipContent>
+            {originalTime} {ianaTimezone} ({conf.timezone})
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
   const passed = isDeadlinePassed(conf);
   return (
     <div
@@ -148,61 +154,62 @@ export default function ConferenceConf({
         </div>
       </div>
       <div className="w-1/2 flex flex-col gap-4">
-        {conf.timeline.slice(0, 1).map((timeline: Timeline, idx: number) => (
-          <div key={idx} className="flex flex-col gap-2 text-sm">
-            {!isOutdated(timeline.abstract_deadline) ? (
-              <div className="flex flex-col gap-1">
-                <Countdown
-                  deadline={timeline.abstract_deadline!}
-                  type="abstract"
-                />
-                <div
-                  className={`${
-                    passed
-                      ? "text-gray-400 dark:text-gray-500"
-                      : "text-gray-600 dark:text-gray-400"
-                  }`}
-                >
-                  <div className="flex flex-row flex-wrap gap-1">
-                    Abstract Deadline:{" "}
-                    {formatDeadline(timeline.abstract_deadline!, conf.timezone)}
+        {conf.timeline.slice(0, 1).map((timeline: Timeline, idx: number) => {
+          const deadline = toDate(timeline.deadline);
+          const abstractDeadline = toDate(timeline.abstract_deadline);
+          return (
+            <div key={idx} className="flex flex-col gap-2 text-sm">
+              {isValid(abstractDeadline) && !isPast(abstractDeadline!) ? (
+                <div className="flex flex-col gap-1">
+                  <Countdown
+                    deadline={abstractDeadline! as Date}
+                    type="abstract"
+                  />
+                  <div
+                    className={`${
+                      passed
+                        ? "text-gray-400 dark:text-gray-500"
+                        : "text-gray-600 dark:text-gray-400"
+                    }`}
+                  >
+                    <div className="flex flex-row flex-wrap gap-1">
+                      Abstract Deadline: {formatDeadline(abstractDeadline!)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : !isOutdated(timeline.deadline) ? (
-              <div className="flex flex-col gap-1">
-                <Countdown deadline={timeline.deadline!} type="paper" />
-                <div
-                  className={`${
-                    passed
-                      ? "text-gray-400 dark:text-gray-500"
-                      : "text-gray-600 dark:text-gray-400"
-                  }`}
-                >
-                  <div className="flex flex-row flex-wrap gap-1">
-                    Paper Deadline:{" "}
-                    {formatDeadline(timeline.deadline!, conf.timezone)}
+              ) : isValid(deadline) && !isPast(deadline!) ? (
+                <div className="flex flex-col gap-1">
+                  <Countdown deadline={deadline! as Date} type="paper" />
+                  <div
+                    className={`${
+                      passed
+                        ? "text-gray-400 dark:text-gray-500"
+                        : "text-gray-600 dark:text-gray-400"
+                    }`}
+                  >
+                    <div className="flex flex-row flex-wrap gap-1">
+                      Paper Deadline: {formatDeadline(deadline!)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-1">
-                <div
-                  className={`${
-                    passed
-                      ? "text-gray-400 dark:text-gray-500"
-                      : "text-gray-600 dark:text-gray-400"
-                  }`}
-                >
-                  <div className="flex flex-row flex-wrap gap-1">
-                    Paper Deadline:{" "}
-                    {formatDeadline(timeline.deadline!, conf.timezone)}
+              ) : (
+                <div className="flex flex-col gap-1">
+                  <div
+                    className={`${
+                      passed
+                        ? "text-gray-400 dark:text-gray-500"
+                        : "text-gray-600 dark:text-gray-400"
+                    }`}
+                  >
+                    <div className="flex flex-row flex-wrap gap-1">
+                      Paper Deadline: {formatDeadline(deadline!)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        ))}
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

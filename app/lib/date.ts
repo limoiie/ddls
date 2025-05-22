@@ -1,6 +1,7 @@
 export function getIANATimezone(timezone: string): string {
   // Map common timezone abbreviations to IANA timezone names
   const timezoneMap: { [key: string]: string } = {
+    AoE: "Etc/GMT+12",
     "UTC-12": "Etc/GMT+12",
     "UTC-11": "Pacific/Midway",
     "UTC-10": "Pacific/Honolulu",
@@ -27,7 +28,6 @@ export function getIANATimezone(timezone: string): string {
     "UTC+10": "Australia/Sydney",
     "UTC+11": "Pacific/Guadalcanal",
     "UTC+12": "Pacific/Auckland",
-    AoE: "Pacific/Kiritimati",
   };
 
   // If the timezone is already an IANA timezone name, return it
