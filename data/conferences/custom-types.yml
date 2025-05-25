@@ -7,8 +7,8 @@
     - EMNLP
     - NeurIPS
     - NAACL
-    - NLPCC
-    - CoNLL
+    # - NLPCC
+    # - CoNLL
 - name: 网络与信息安全
   name_en: Cyber Security
   sub: Security
@@ -28,7 +28,7 @@
   name_en: Computer Vision
   sub: CV
   confs:
-    - ACCV
+    # - ACCV
     - CVPR
     - ECCV
     - ICCV
