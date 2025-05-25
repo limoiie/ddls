@@ -1,0 +1,18 @@
+- title: ISCC
+  description: IEEE Symposium on Computers and Communications
+  sub: SC
+  rank:
+    ccf: C
+    core: C
+    thcpl: N
+  dblp: iscc
+  confs:
+    - year: 2025
+      id: iscc2025
+      link: https://sn.committees.comsoc.org/call-for-papers/the-30th-ieee-symposium-on-computers-and-communications-iscc-2025/
+      timeline:
+        - deadline: "2025-01-10 23:59:59"
+        - notification: "2025-03-14 23:59:59"
+      timezone: AoE
+      date: July 2-5, 2025
+      place: Bologna, Italy
