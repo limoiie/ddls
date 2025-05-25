@@ -4,8 +4,11 @@
   confs:
     - ACL
     - COLING
-    - NeurIPS
     - EMNLP
+    - NeurIPS
+    - NAACL
+    - NLPCC
+    - CoNLL
 - name: 网络与信息安全
   name_en: Cyber Security
   sub: Security
