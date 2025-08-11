@@ -43,3 +43,8 @@
     # - ICLR
     - KSEM
     - WWW
+- name: 计算机体系结构
+  name_en: Computer Architecture
+  sub: DS
+  confs:
+    - ICCS

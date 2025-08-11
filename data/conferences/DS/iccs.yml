@@ -1,0 +1,29 @@
+- title: ICCS
+  description: ACM Conference on Computer and Communications Security
+  sub: DS
+  rank:
+    ccf: A
+    core: A*
+    thcpl: A*
+  dblp: iccs
+  confs:
+    - year: 2025
+      id: iccs2025
+      link: https://www.iccs-meeting.org/iccs2025/
+      timeline:
+        - abstract_deadline: '2025-04-01 23:59:00'
+          deadline: '2025-04-08 23:59:00'
+          comment: call for papers
+      timezone: AoE
+      date: July 7-9, 2025
+      place: Singapore, Singapore
+    - year: 2026
+      id: iccs2026
+      link: https://www.iccs-meeting.org/iccs2026/
+      timeline:
+        - abstract_deadline: '2026-01-23 23:59:00'
+          deadline: '2026-01-23 23:59:00'
+          comment: call for papers
+      timezone: AoE
+      date: June 29-July 9, 2026
+      place: Hamburg, Germany
