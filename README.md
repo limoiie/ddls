@@ -18,19 +18,23 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) 
+to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Adding and Updating Conferences
 
-Conference data is stored in YAML files within the [`data/conferences`](https://github.com/limoiie/ddls/tree/main/data/conferences) directory,
-which is directly copied from [`ccfddl/ccf-deadlines`](https://github.com/ccfddl/ccf-deadlines.git).
+This project includes all the conferences from the [`ccfddl/ccf-deadlines`](https://github.com/ccfddl/ccf-deadlines.git) repository 
+by adding it as a submodule in `data/conferences/cff-deadlines`.
+
+Additionally, you can add new conference data or overwrite existing data 
+by creating corresponding YAML files in the [`data/conferences`](https://github.com/limoiie/ddls/tree/main/data/conferences) directory. 
+These files should follow the format used in [`ccfddl/ccf-deadlines`](https://github.com/ccfddl/ccf-deadlines.git). 
 The structure is organized as follows:
 
-- [`data/conferences/types.yml`](https://github.com/limoiie/ddls/tree/main/data/conferences/types.yml) - Contains official conference categories
-- [`data/conferences/custom-types.yml`](https://github.com/limoiie/ddls/tree/main/data/conferences/custom-types.yml) - Contains custom conference categories relevant to our lab
-- [`data/conferences/**`](https://github.com/limoiie/ddls/tree/main/data/conferences) - Contains individual conference configurations
+-  [`data/conferences/types.yml`](https://github.com/limoiie/ddls/tree/main/data/conferences/custom-types.yml) - Contains custom conference categories relevant to our lab
+-  [`data/conferences/**`](https://github.com/limoiie/ddls/tree/main/data/conferences) - Contains individual conference configurations
 
-To add a new conference, create a `.yml` file in the appropriate subdirectory under [`data/conferences/**`](https://github.com/limoiie/ddls/tree/main/data/conferences) with the following structure:
+To overwrite or add a new conference, create a `.yml` file in the appropriate subdirectory under [`data/conferences/**`](https://github.com/limoiie/ddls/tree/main/data/conferences) with the following structure:
 
 ```yaml
 - title: ACCV
