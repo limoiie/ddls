@@ -15,7 +15,7 @@
   confs:
     - ACSAC
     # - ASIACCS
-    - DFRWS
+    - DFRWS APAC
     # - DIMVA
     - ESORICS
     - ICASSP
