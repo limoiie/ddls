@@ -8,24 +8,35 @@ import { isPast } from "date-fns";
 import { getIANATimezone } from "@/app/lib/date";
 import moment from "moment-timezone";
 
+const TO_BE_DETERMINED_DATE = new Date("9999-12-31");
+
+function isToBeDetermined(
+  date: Date | string | number | undefined | null
+): boolean {
+  return (
+    !date ||
+    date === "TBD" ||
+    date.toString() === TO_BE_DETERMINED_DATE.toString()
+  );
+}
+
 function getLatestDateOfConferenceEvent(conf: ConferenceEvent): Date {
   const ianaTimezone = getIANATimezone(conf.timezone);
   const latestTimeline = conf.timeline[0];
   if (
-    (!latestTimeline.deadline || latestTimeline.deadline === "TBD") &&
-    (!latestTimeline.abstract_deadline ||
-      latestTimeline.abstract_deadline === "TBD")
+    isToBeDetermined(latestTimeline.deadline) &&
+    isToBeDetermined(latestTimeline.abstract_deadline)
   ) {
     // If the deadline and abstract deadline are both TBD, return a date far in the future
-    return new Date("9999-12-31");
+    return TO_BE_DETERMINED_DATE;
   }
 
-  const abstractDeadline =
-    latestTimeline.abstract_deadline === "TBD"
-      ? ""
-      : latestTimeline.abstract_deadline;
-  const deadline =
-    latestTimeline.deadline === "TBD" ? "" : latestTimeline.deadline;
+  const abstractDeadline = isToBeDetermined(latestTimeline.abstract_deadline)
+    ? ""
+    : latestTimeline.abstract_deadline;
+  const deadline = isToBeDetermined(latestTimeline.deadline)
+    ? ""
+    : latestTimeline.deadline;
 
   return moment.tz(abstractDeadline || deadline || "", ianaTimezone).toDate();
 }
@@ -116,7 +127,17 @@ export async function GET(request: NextRequest) {
           .sort((a, b) => {
             const dateA = getLatestDateOfConferenceEvent(a);
             const dateB = getLatestDateOfConferenceEvent(b);
-            return dateB.getTime() - dateA.getTime();
+            // If one is past and the other is not, the past one should be later
+            if (isPast(dateA) !== isPast(dateB)) {
+              return isPast(dateA) ? 1 : -1;
+            }
+            // If both are past, the latest date should be later
+            if (isPast(dateA)) {
+              return dateB.getTime() - dateA.getTime();
+            }
+
+            // If both are not past, the earliest date should be earlier
+            return dateA.getTime() - dateB.getTime();
           }),
       };
     })
