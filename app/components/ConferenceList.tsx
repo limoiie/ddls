@@ -275,26 +275,28 @@ export default function ConferenceList() {
           />
           <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
         </div>
-        <FilterBadgeGroup
-          items={CCF_TAGS.map((tag) => ({
-            id: tag,
-            label: `CCF-${tag}`,
-          }))}
-          selectedItems={selectedCCFs}
-          onToggle={toggleSelectedCCF}
-          onClear={() => setSelectedCCFs([])}
-        />
-        <FilterBadgeGroup
-          items={types.map((type) => ({
-            id: type.sub,
-            label: type.sub,
-            tooltip: `${type.name} (${type.name_en})`,
-          }))}
-          selectedItems={selectedTypes}
-          onToggle={toggleSelectedType}
-          onClear={() => setSelectedTypes([])}
-          showTooltip={true}
-        />
+        <div className="flex justify-between items-start gap-4">
+          <FilterBadgeGroup
+            items={types.map((type) => ({
+              id: type.sub,
+              label: type.sub,
+              tooltip: `${type.name} (${type.name_en})`,
+            }))}
+            selectedItems={selectedTypes}
+            onToggle={toggleSelectedType}
+            onClear={() => setSelectedTypes([])}
+            showTooltip={true}
+          />
+          <FilterBadgeGroup
+            items={CCF_TAGS.map((tag) => ({
+              id: tag,
+              label: `CCF-${tag}`,
+            }))}
+            selectedItems={selectedCCFs}
+            onToggle={toggleSelectedCCF}
+            onClear={() => setSelectedCCFs([])}
+          />
+        </div>
       </div>
 
       <div className="space-y-4">

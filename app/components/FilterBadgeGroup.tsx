@@ -34,7 +34,7 @@ export function FilterBadgeGroup({
           key={item.id}
           variant={`${selectedItems.includes(item.id) ? "default" : "outline"}`}
           onClick={() => onToggle(item.id)}
-          className={`px-3 py-1 rounded-lg border ${
+          className={`h-9 px-3 py-1 rounded-lg border ${
             selectedItems.includes(item.id)
               ? "bg-blue-500 text-white border-blue-500"
               : "hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -54,13 +54,11 @@ export function FilterBadgeGroup({
           )}
         </Badge>
       ))}
-      <Button
-        variant="ghost"
-        onClick={onClear}
-        className={`${selectedItems.length > 0 ? "visible" : "invisible"}`}
-      >
-        <BrushCleaningIcon className="size-4" />
-      </Button>
+      {selectedItems.length > 0 && (
+        <Button variant="ghost" onClick={onClear}>
+          <BrushCleaningIcon className="size-4" />
+        </Button>
+      )}
     </div>
   );
-} 
+}
