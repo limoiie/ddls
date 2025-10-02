@@ -2,14 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Conference, ConferenceType } from "../types/api";
-import ConferenceCardList from "./ConferenceCardList";
+import ConferenceCardListView from "./ConferenceCardListView";
+import ConferenceTableView from "./ConferenceTableView";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
-import { CopyrightIcon } from "lucide-react";
+import { CopyrightIcon, ListIcon, TableIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { FilterBadgeGroup } from "./FilterBadgeGroup";
 import { Toggle } from "@/components/ui/toggle";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
   TooltipProvider,
@@ -37,6 +39,7 @@ export default function Conferences() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
   const [pageInputValue, setPageInputValue] = useState("1");
+  const [viewMode, setViewMode] = useState<"list" | "table">("list");
 
   // Initialize state from localStorage on client-side
   useEffect(() => {
@@ -64,6 +67,11 @@ export default function Conferences() {
     if (savedPinnedIds) {
       setPinnedIds(JSON.parse(savedPinnedIds));
     }
+
+    const savedViewMode = localStorage.getItem("viewMode");
+    if (savedViewMode) {
+      setViewMode(savedViewMode as "list" | "table");
+    }
   }, []);
 
   // Save filter options to localStorage when they change
@@ -90,6 +98,10 @@ export default function Conferences() {
   useEffect(() => {
     localStorage.setItem("pinnedConferences", JSON.stringify(pinnedIds));
   }, [pinnedIds]);
+
+  useEffect(() => {
+    localStorage.setItem("viewMode", viewMode);
+  }, [viewMode]);
 
   // Reset page index when filters change
   useEffect(() => {
@@ -213,8 +225,8 @@ export default function Conferences() {
     return <div className="text-center py-8 text-red-500">{error}</div>;
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <div className="mb-6 space-y-4">
+    <div className="flex flex-col items-center w-full max-w-4xl mx-auto">
+      <div className="mb-6 space-y-4 w-full">
         <div className="flex flex-wrap gap-4">
           <TooltipProvider>
             <Tooltip>
@@ -241,6 +253,21 @@ export default function Conferences() {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          <ToggleGroup
+            type="single"
+            value={viewMode}
+            onValueChange={(value) =>
+              setViewMode((value || viewMode) as "list" | "table")
+            }
+            variant="outline"
+          >
+            <ToggleGroupItem value="list">
+              <ListIcon className="size-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="table">
+              <TableIcon className="size-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
           <Input
             type="text"
             placeholder="Search conferences..."
@@ -275,12 +302,21 @@ export default function Conferences() {
         </div>
       </div>
 
-      <ConferenceCardList
-        conferences={conferences}
-        loading={loading}
-        pinnedIds={pinnedIds}
-        onTogglePin={togglePin}
-      />
+      {viewMode === "list" ? (
+        <ConferenceCardListView
+          conferences={conferences}
+          loading={loading}
+          pinnedIds={pinnedIds}
+          onTogglePin={togglePin}
+        />
+      ) : (
+        <ConferenceTableView
+          conferences={conferences}
+          loading={loading}
+          pinnedIds={pinnedIds}
+          onTogglePin={togglePin}
+        />
+      )}
 
       <PaginationControls
         pageIndex={pageIndex}
