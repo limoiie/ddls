@@ -3,10 +3,11 @@ import {
   readAllConferenceYamlFiles,
   readCustomTypesYamlFile,
 } from "@/app/lib/yaml";
-import { Conference, ConferenceEvent } from "@/app/types/api";
+import { Conference, ConfEdition } from "@/app/types/api";
 import { isPast } from "date-fns";
 import { getIANATimezone } from "@/app/lib/date";
 import moment from "moment-timezone";
+import { getAllNotifications } from "@/app/lib/database";
 
 const TO_BE_DETERMINED_DATE = new Date("9999-12-31");
 
@@ -20,7 +21,7 @@ function isToBeDetermined(
   );
 }
 
-function getLatestDateOfConferenceEvent(conf: ConferenceEvent): Date {
+function getLatestDateOfConferenceEvent(conf: ConfEdition): Date {
   const ianaTimezone = getIANATimezone(conf.timezone);
   const latestTimeline = conf.timeline[0];
   if (
@@ -61,6 +62,22 @@ export async function GET(request: NextRequest) {
   // Read conferences from YAML files
   const items: Conference[] = await readAllConferenceYamlFiles();
 
+  // Read notification times from database
+  const notifications = getAllNotifications();
+  console.log("Notifications", notifications);
+
+  // Inflate notification times into timelines
+  const itemsWithNotifications = items.map((item) => ({
+    ...item,
+    confs: item.confs.map((conf) => ({
+      ...conf,
+      timeline: conf.timeline.map((timeline) => ({
+        ...timeline,
+        notification: notifications[conf.id] || timeline.notification,
+      })),
+    })),
+  }));
+
   // Read custom types from YAML file, which maps conf title to its custom types
   const customTypes: Record<string, string> = (
     await readCustomTypesYamlFile()
@@ -72,7 +89,7 @@ export async function GET(request: NextRequest) {
   }, {} as Record<string, string>);
 
   // Filter items based on keyword, CCF, and date range if provided and sort by the latest conference date
-  const sortedFilteredItems: Conference[] = items
+  const sortedFilteredItems: Conference[] = itemsWithNotifications
     // Overwrite types if customTypeMode is enabled
     .map((item) => {
       return customTypeMode

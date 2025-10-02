@@ -1,23 +1,30 @@
 import { isPast, isValid } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import moment from "moment-timezone";
-import { Conference, ConferenceEvent, Timeline } from "../types/api";
+import { Conference, ConfEdition, Timeline } from "../types/api";
 import Countdown from "./Countdown";
+import DateTimePicker from "./DateTimePicker";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { getIANATimezone } from "../lib/date";
-import { JSX } from "react";
+import { JSX, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface ConferenceEditionProps {
-  conf: ConferenceEvent;
+  conf: ConfEdition;
   confSeries: Conference;
 }
 
-function isDeadlinePassed(conf: ConferenceEvent) {
+function isDeadlinePassed(conf: ConfEdition) {
   const ianaTimezone = getIANATimezone(conf.timezone);
   const deadlineDate = moment
     .tz(
@@ -33,6 +40,77 @@ export default function ConferenceEdition({
   confSeries,
 }: ConferenceEditionProps) {
   const ianaTimezone = getIANATimezone(conf.timezone);
+  const [notification, setNotification] = useState(
+    conf.timeline[0]?.notification || ""
+  );
+  const [isSaving, setIsSaving] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  // Date and time picker states
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string>("10:30:00");
+
+  // Helper functions to convert between datetime-local and date/time formats
+  const parseNotificationToDateTime = (notification: string) => {
+    if (!notification) return { date: undefined, time: "10:30:00" };
+    const date = new Date(notification);
+    const time = date.toTimeString().slice(0, 8);
+    return { date, time };
+  };
+
+  const combineDateTime = (date: Date | undefined, time: string) => {
+    if (!date) return "";
+    const [hours, minutes, seconds] = time.split(":");
+    const combined = new Date(date);
+    combined.setHours(parseInt(hours), parseInt(minutes), parseInt(seconds));
+    return combined.toISOString().slice(0, 16);
+  };
+
+  const handleSaveNotification = async () => {
+    setIsSaving(true);
+    try {
+      const datetimeValue = combineDateTime(selectedDate, selectedTime);
+      const response = await fetch("/api/notifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          confEditionId: conf.id,
+          notification: datetimeValue || null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save notification time");
+      }
+
+      setNotification(datetimeValue);
+      setPopoverOpen(false);
+    } catch (error) {
+      console.error("Error saving notification time:", error);
+      // You might want to show a toast notification here
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setNotification(conf.timeline[0]?.notification || "");
+    const { date, time } = parseNotificationToDateTime(
+      conf.timeline[0]?.notification || ""
+    );
+    setSelectedDate(date);
+    setSelectedTime(time);
+    setPopoverOpen(false);
+  };
+
+  const handleEditStart = () => {
+    const { date, time } = parseNotificationToDateTime(notification);
+    setSelectedDate(date);
+    setSelectedTime(time);
+    setPopoverOpen(true);
+  };
 
   const toDate = (
     deadline: Date | string | number | undefined | null
@@ -170,37 +248,72 @@ export default function ConferenceEdition({
                 ) : (
                   <div />
                 )}
+                {abstractDeadline && (
+                  <div
+                    className={`${
+                      passed
+                        ? "text-gray-400 dark:text-gray-500"
+                        : "text-gray-600 dark:text-gray-400"
+                    }`}
+                  >
+                    <div className="flex flex-row flex-wrap gap-1">
+                      <span className="w-32 text-right">Abstract Deadline:</span>
+                      <span>{formatDeadline(abstractDeadline!)}</span>
+                    </div>
+                  </div>
+                )}
+                {deadline && (
+                  <div
+                    className={`${
+                      passed
+                        ? "text-gray-400 dark:text-gray-500"
+                        : "text-gray-600 dark:text-gray-400"
+                    }`}
+                  >
+                    <div className="flex flex-row flex-wrap gap-1">
+                      <span className="w-32 text-right">Paper Deadline:</span>
+                      <span>{formatDeadline(deadline!)}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Notification Time Section */}
+                <div
+                  className={`${
+                    passed
+                      ? "text-gray-400 dark:text-gray-500"
+                      : "text-gray-600 dark:text-gray-400"
+                  }`}
+                >
+                  <div className="flex flex-row flex-wrap gap-1 items-center">
+                    <span className="w-32 text-right">Notification:</span>
+                    <div className="flex flex-row gap-2 items-center">
+                      {/* <span>{notification || "TBD"}</span> */}
+                      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <div
+                            onClick={handleEditStart}
+                            className="max-h-[20px] cursor-pointer hover:underline"
+                          >
+                            {formatDeadline(notification || "TBD")}
+                          </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-4" align="center">
+                          <DateTimePicker
+                            selectedDate={selectedDate}
+                            selectedTime={selectedTime}
+                            isSaving={isSaving}
+                            onDateChange={setSelectedDate}
+                            onTimeChange={setSelectedTime}
+                            onSave={handleSaveNotification}
+                            onCancel={handleCancel}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                </div>
               </div>
-              {abstractDeadline && (
-                <div className="flex flex-col gap-1">
-                  <div
-                    className={`${
-                      passed
-                        ? "text-gray-400 dark:text-gray-500"
-                        : "text-gray-600 dark:text-gray-400"
-                    }`}
-                  >
-                    <div className="flex flex-row flex-wrap gap-1">
-                      Abstract Deadline: {formatDeadline(abstractDeadline!)}
-                    </div>
-                  </div>
-                </div>
-              )}
-              {deadline && (
-                <div className="flex flex-col gap-1">
-                  <div
-                    className={`${
-                      passed
-                        ? "text-gray-400 dark:text-gray-500"
-                        : "text-gray-600 dark:text-gray-400"
-                    }`}
-                  >
-                    <div className="flex flex-row flex-wrap gap-1">
-                      Paper Deadline: {formatDeadline(deadline!)}
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           );
         })}

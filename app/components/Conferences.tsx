@@ -39,7 +39,7 @@ export default function Conferences() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
   const [pageInputValue, setPageInputValue] = useState("1");
-  const [viewMode, setViewMode] = useState<"list" | "table">("list");
+  const [viewMode, setViewMode] = useState<"list" | "table">("table");
 
   // Initialize state from localStorage on client-side
   useEffect(() => {

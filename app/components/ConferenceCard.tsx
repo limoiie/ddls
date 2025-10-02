@@ -43,7 +43,7 @@ export default function ConferenceCard({
           }`}
         />
       </button>
-      <div className="space-y-4">
+      <div className="space-y-2">
         <ConferenceEdition
           key={conference.confs[0].id}
           conf={conference.confs[0]}

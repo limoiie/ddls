@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Conference, ConferenceEvent } from "../types/api";
+import { Conference, ConfEdition } from "../types/api";
 import { Badge } from "@/components/ui/badge";
 import { StarIcon } from "lucide-react";
 import {
@@ -34,7 +34,7 @@ type ConferenceRow = Conference & {
 
 const columnHelper = createColumnHelper<ConferenceRow>();
 
-function isDeadlinePassed(conf: ConferenceEvent) {
+function isDeadlinePassed(conf: ConfEdition) {
   const ianaTimezone = getIANATimezone(conf.timezone);
   const deadlineDate = moment
     .tz(
@@ -91,7 +91,7 @@ export default function ConferenceTableView({
           const conference = row.original;
           const passed = isDeadlinePassed(conference.firstEdition);
           return (
-            <div className="flex items-centerj justify-end truncate">
+            <div className="flex items-center justify-end truncate">
               <a
                 href={conference.firstEdition.link}
                 target="_blank"
@@ -253,15 +253,15 @@ export default function ConferenceTableView({
             <div className="space-y-1">
               {timeline.map((timelineItem, index) => (
                 <div key={index} className="text-xs">
-                  {timelineItem.deadline && (
+                  {
                     <div
                       className={`font-medium ${
                         passed ? "text-gray-400 dark:text-gray-500" : ""
                       }`}
                     >
-                      {timelineItem.deadline}
+                      {timelineItem.notification || "-"}
                     </div>
-                  )}
+                  }
                   {timelineItem.comment && (
                     <div
                       className={`max-w-[200px] whitespace-normal italic ${
@@ -366,7 +366,7 @@ export default function ConferenceTableView({
   }
 
   return (
-    <div className="min-w-[1400px] rounded-md border">
+    <div className="min-w-[1400px] rounded-md border relative">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -407,15 +407,6 @@ export default function ConferenceTableView({
                       )}
                     </TableCell>
                   ))}
-                  {passed && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                      <div className="transform rotate-340">
-                        <span className="text-2xl font-bold text-red-500 opacity-50">
-                          PASSED
-                        </span>
-                      </div>
-                    </div>
-                  )}
                 </TableRow>
               );
             })
@@ -428,6 +419,31 @@ export default function ConferenceTableView({
           )}
         </TableBody>
       </Table>
+      {/* Render passed overlays outside the table structure */}
+      {table.getRowModel().rows?.map((row) => {
+        const passed = isDeadlinePassed(row.original.firstEdition);
+        if (!passed) return null;
+
+        // Calculate row position for overlay
+        const rowIndex = table.getRowModel().rows.indexOf(row);
+        const headerHeight = 40; // Approximate header height
+        const rowHeight = 60; // Approximate row height
+        const top = headerHeight + rowIndex * rowHeight;
+
+        return (
+          <div
+            key={`overlay-${row.id}`}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+            style={{ top: `${top}px`, height: `${rowHeight}px` }}
+          >
+            <div className="transform rotate-340">
+              <span className="text-2xl font-bold text-red-500 opacity-50">
+                PASSED
+              </span>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

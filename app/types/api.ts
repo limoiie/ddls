@@ -1,10 +1,11 @@
 export interface Timeline {
   deadline?: string;
   abstract_deadline?: string;
+  notification?: string;
   comment?: string;
 }
 
-export interface ConferenceEvent {
+export interface ConfEdition {
   year: number;
   id: string;
   link: string;
@@ -26,7 +27,7 @@ export interface Conference {
   sub: string;
   rank: Rank;
   dblp: string;
-  confs: ConferenceEvent[];
+  confs: ConfEdition[];
 }
 
 export interface PaginatedResponse {
