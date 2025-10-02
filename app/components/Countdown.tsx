@@ -50,13 +50,13 @@ export default function Countdown({ deadline, type }: CountdownProps) {
           </span>
         )}
         <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded">
-          {timeLeft.hours}h
+          {timeLeft.hours.toString().padStart(2, "0")}h
         </span>
         <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded">
-          {timeLeft.minutes}m
+          {timeLeft.minutes.toString().padStart(2, "0")}m
         </span>
         <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded">
-          {timeLeft.seconds}s
+          {timeLeft.seconds.toString().padStart(2, "0")}s
         </span>
       </div>
       <span className="text-gray-500 dark:text-gray-400 hidden md:block">

@@ -31,14 +31,11 @@ function getLatestDateOfConferenceEvent(conf: ConferenceEvent): Date {
     return TO_BE_DETERMINED_DATE;
   }
 
-  const abstractDeadline = isToBeDetermined(latestTimeline.abstract_deadline)
-    ? ""
-    : latestTimeline.abstract_deadline;
-  const deadline = isToBeDetermined(latestTimeline.deadline)
-    ? ""
-    : latestTimeline.deadline;
+  if (isToBeDetermined(latestTimeline.deadline)) {
+    return moment.tz(latestTimeline.abstract_deadline, ianaTimezone).toDate();
+  }
 
-  return moment.tz(abstractDeadline || deadline || "", ianaTimezone).toDate();
+  return moment.tz(latestTimeline.deadline, ianaTimezone).toDate();
 }
 
 export async function GET(request: NextRequest) {

@@ -159,12 +159,20 @@ export default function ConferenceConf({
           const abstractDeadline = toDate(timeline.abstract_deadline);
           return (
             <div key={idx} className="flex flex-col gap-2 text-sm">
-              {isValid(abstractDeadline) && !isPast(abstractDeadline!) ? (
-                <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1">
+                {isValid(abstractDeadline) && !isPast(abstractDeadline!) ? (
                   <Countdown
                     deadline={abstractDeadline! as Date}
                     type="abstract"
                   />
+                ) : isValid(deadline) && !isPast(deadline!) ? (
+                  <Countdown deadline={deadline! as Date} type="paper" />
+                ) : (
+                  <div />
+                )}
+              </div>
+              {abstractDeadline && (
+                <div className="flex flex-col gap-1">
                   <div
                     className={`${
                       passed
@@ -177,22 +185,8 @@ export default function ConferenceConf({
                     </div>
                   </div>
                 </div>
-              ) : isValid(deadline) && !isPast(deadline!) ? (
-                <div className="flex flex-col gap-1">
-                  <Countdown deadline={deadline! as Date} type="paper" />
-                  <div
-                    className={`${
-                      passed
-                        ? "text-gray-400 dark:text-gray-500"
-                        : "text-gray-600 dark:text-gray-400"
-                    }`}
-                  >
-                    <div className="flex flex-row flex-wrap gap-1">
-                      Paper Deadline: {formatDeadline(deadline!)}
-                    </div>
-                  </div>
-                </div>
-              ) : (
+              )}
+              {deadline && (
                 <div className="flex flex-col gap-1">
                   <div
                     className={`${
