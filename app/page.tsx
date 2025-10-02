@@ -1,4 +1,4 @@
-import ConferenceList from "./components/ConferenceList";
+import Conferences from "./components/Conferences";
 
 export default function Home() {
   return (
@@ -7,7 +7,7 @@ export default function Home() {
         <h1 className="text-4xl font-bold mb-8 text-center">
           Conference Deadlines for IIE07 · JQ
         </h1>
-        <ConferenceList />
+        <Conferences />
       </main>
     </div>
   );

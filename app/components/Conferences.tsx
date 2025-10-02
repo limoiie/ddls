@@ -2,37 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Conference, ConferenceType } from "../types/api";
-import ConferenceConf from "./ConferenceConf";
-import { Badge } from "@/components/ui/badge";
+import ConferenceCardList from "./ConferenceCardList";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
-import { CopyrightIcon, StarIcon } from "lucide-react";
+import { CopyrightIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-  PaginationLink,
-  PaginationEllipsis,
-} from "@/components/ui/pagination";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { FilterBadgeGroup } from "./FilterBadgeGroup";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
 import {
   Tooltip,
@@ -40,12 +16,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import PaginationControls from "./PaginationControls";
 
 const CCF_TAGS = ["A", "B", "C"];
 const DEBOUNCE_DELAY = 300; // 300ms delay
 
-export default function ConferenceList() {
-  const shownPageHalfWinSize = 2;
+export default function Conferences() {
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [types, setTypes] = useState<ConferenceType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -299,205 +275,31 @@ export default function ConferenceList() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {loading ? (
-          <div className="text-center py-8">Loading...</div>
-        ) : (
-          conferences.map((conference) => (
-            <div
-              key={conference.title.toUpperCase()}
-              className="group flex flex-col gap-4 p-6 rounded-lg shadow-md relative bg-gray-50 dark:bg-gray-800"
-            >
-              <button
-                onClick={() => togglePin(conference.title)}
-                className={`absolute top-0 left-0 p-2 rounded-full transition-colors z-10 pointer-events-auto rotate-320 ${
-                  pinnedIds.includes(conference.title)
-                    ? "text-blue-500 hover:text-blue-600"
-                    : "text-gray-400 hover:text-gray-500 opacity-100 sm:opacity-0 group-hover:opacity-100"
-                }`}
-                title={pinnedIds.includes(conference.title) ? "Unpin" : "Pin"}
-              >
-                <StarIcon
-                  className={`w-5 h-5 ${
-                    pinnedIds.includes(conference.title) ? "fill-current" : ""
-                  }`}
-                />
-              </button>
-              <div className="space-y-4">
-                <ConferenceConf
-                  key={conference.confs[0].id}
-                  conf={conference.confs[0]}
-                  confSeries={conference}
-                />
-                {conference.confs.length > 1 && (
-                  <Accordion type="single" collapsible>
-                    <AccordionItem key="other-confs" value="other-confs">
-                      <AccordionTrigger className="py-0">
-                        History Conferences
-                      </AccordionTrigger>
-                      <AccordionContent className="flex flex-col gap-3 pt-6">
-                        {conference.confs.slice(1).map((conf) => (
-                          <div key={conf.id} className="flex flex-col gap-3">
-                            <Separator />
-                            <ConferenceConf
-                              conf={conf}
-                              confSeries={conference}
-                            />
-                          </div>
-                        ))}
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline">{conference.sub}</Badge>
-                {conference.rank.ccf && (
-                  <Badge variant="outline">CCF: {conference.rank.ccf}</Badge>
-                )}
-                {conference.rank.core && (
-                  <Badge variant="outline">CORE: {conference.rank.core}</Badge>
-                )}
-                {conference.rank.thcpl && (
-                  <Badge variant="outline">
-                    THCPL: {conference.rank.thcpl}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      <ConferenceCardList
+        conferences={conferences}
+        loading={loading}
+        pinnedIds={pinnedIds}
+        onTogglePin={togglePin}
+      />
 
-      <Pagination className="mt-8 flex justify-center gap-2">
-        <PaginationContent>
-          {/* Page size selector */}
-          <PaginationItem>
-            <div className="flex items-center gap-2 px-2">
-              <span className="text-sm">Page size</span>
-              <Select
-                value={pageSize.toString()}
-                onValueChange={(value: string) => {
-                  const newSize = parseInt(value);
-                  setPageSize(newSize);
-                  setPageIndex(0); // Reset to first page when changing page size
-                }}
-              >
-                <SelectTrigger className="w-20 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5</SelectItem>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </PaginationItem>
-
-          {/* <PaginationItem>
-            <PaginationLink onClick={() => setPageIndex(0)}>
-              <ChevronsLeftIcon className="size-4" />
-            </PaginationLink>
-          </PaginationItem> */}
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
-            />
-          </PaginationItem>
-
-          {/* First page */}
-          <PaginationItem>
-            <PaginationLink
-              onClick={() => setPageIndex(0)}
-              isActive={pageIndex === 0}
-            >
-              1
-            </PaginationLink>
-          </PaginationItem>
-
-          {/* Left ellipsis */}
-          {pageIndex > 1 + shownPageHalfWinSize && (
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-          )}
-
-          {/* Pages around current page */}
-          {Array.from({ length: totalPages }).map((_, i) => {
-            if (i === 0 || i === totalPages - 1) return null; // Skip first and last
-            if (Math.abs(i - pageIndex) > shownPageHalfWinSize) return null; // Show only pages around current
-            return (
-              <PaginationItem key={i}>
-                <PaginationLink
-                  onClick={() => setPageIndex(i)}
-                  isActive={pageIndex === i}
-                >
-                  {i + 1}
-                </PaginationLink>
-              </PaginationItem>
-            );
-          })}
-
-          {/* Right ellipsis */}
-          {pageIndex < totalPages - 2 - shownPageHalfWinSize && (
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-          )}
-
-          {/* Last page */}
-          {totalPages > 1 && (
-            <PaginationItem>
-              <PaginationLink
-                onClick={() => setPageIndex(totalPages - 1)}
-                isActive={pageIndex === totalPages - 1}
-              >
-                {totalPages}
-              </PaginationLink>
-            </PaginationItem>
-          )}
-
-          <PaginationItem>
-            <PaginationNext
-              onClick={() =>
-                setPageIndex((p) => Math.min(totalPages - 1, p + 1))
-              }
-            />
-          </PaginationItem>
-          {/* <PaginationItem>
-            <PaginationLink onClick={() => setPageIndex(totalPages - 1)}>
-              <ChevronsRightIcon className="size-4" />
-            </PaginationLink>
-          </PaginationItem> */}
-
-          {/* Page input */}
-          <PaginationItem>
-            <div className="flex items-center gap-2 px-2">
-              <span className="text-sm">Go to</span>
-              <Input
-                type="number"
-                min={1}
-                max={totalPages}
-                value={pageInputValue}
-                onChange={(e) => {
-                  setPageInputValue(e.target.value);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    const value = parseInt(pageInputValue);
-                    if (value >= 1 && value <= totalPages) {
-                      setPageIndex(value - 1);
-                    }
-                  }
-                }}
-                className="w-16 h-8"
-              />
-            </div>
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <PaginationControls
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        totalPages={totalPages}
+        pageInputValue={pageInputValue}
+        onPageChange={setPageIndex}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPageIndex(0);
+        }}
+        onPageInputChange={setPageInputValue}
+        onPageInputSubmit={(value) => {
+          const pageValue = parseInt(value);
+          if (pageValue >= 1 && pageValue <= totalPages) {
+            setPageIndex(pageValue - 1);
+          }
+        }}
+      />
     </div>
   );
 }

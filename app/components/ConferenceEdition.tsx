@@ -12,7 +12,7 @@ import {
 import { getIANATimezone } from "../lib/date";
 import { JSX } from "react";
 
-interface ConferenceConfProps {
+interface ConferenceEditionProps {
   conf: ConferenceEvent;
   confSeries: Conference;
 }
@@ -28,10 +28,10 @@ function isDeadlinePassed(conf: ConferenceEvent) {
   return deadlineDate.getTime() < Date.now();
 }
 
-export default function ConferenceConf({
+export default function ConferenceEdition({
   conf,
   confSeries,
-}: ConferenceConfProps) {
+}: ConferenceEditionProps) {
   const ianaTimezone = getIANATimezone(conf.timezone);
 
   const toDate = (
