@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Conf Deadlines",
-  description: "Conference Deadlines",
+  title: "IIE07 · JQ - Conf DDLs",
+  description: "Conference Deadlines for IIE07 JQ Lab",
 };
 
 export default function RootLayout({
