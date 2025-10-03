@@ -34,32 +34,43 @@ type ConferenceRow = Conference & {
 
 const columnHelper = createColumnHelper<ConferenceRow>();
 
-function renderTimelineItems(
+function renderTimelineColumn(
   timeline: Timeline[],
-  deadlineField: keyof Timeline,
-  passed: boolean
+  passed: boolean,
+  column: keyof Timeline
 ) {
   if (!timeline || timeline.length === 0) {
-    return (
-      <span
-        className={
-          passed ? "text-gray-400 dark:text-gray-500" : "text-muted-foreground"
-        }
-      >
-        -
-      </span>
-    );
+    return <span className="text-muted-foreground">-</span>;
   }
+
   return (
     <div className="space-y-1">
       {timeline.map((timelineItem, index) => {
-        const deadline = timelineItem[deadlineField];
+        const comment = column === "comment" ? timelineItem.comment : null;
+        const deadline = column === "comment" ? null : timelineItem[column];
         const [date, time] = (deadline || "- -").split(" ");
         return (
-          <div key={index} className="text-xs">
-            {deadline ? (
-              <div className="flex items-center gap-1">
-                {
+          <div key={index} className="h-8 text-xs">
+            {/* show border between timeline items */}
+            {index > 0 && (
+              <div className="border-b border-gray-200 dark:border-gray-700 mb-1"></div>
+            )}
+
+            {column === "comment" && (
+              <div
+                className={`min-w-[120px] whitespace-normal italic line-clamp-2 ${
+                  passed
+                    ? "text-gray-400 dark:text-gray-500"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {comment || "Main stage"}
+              </div>
+            )}
+
+            {column !== "comment" &&
+              (deadline ? (
+                <div className="flex items-center gap-1">
                   <div
                     className={`font-mono font-medium ${
                       passed ? "text-gray-400 dark:text-gray-500" : ""
@@ -67,23 +78,11 @@ function renderTimelineItems(
                   >
                     {date}
                   </div>
-                }
-                <div className="font-mono text-muted-foreground">{time}</div>
-              </div>
-            ) : (
-              <div className="text-gray-400 dark:text-gray-500">-</div>
-            )}
-            {timelineItem.comment && (
-              <div
-                className={`max-w-[200px] whitespace-normal italic ${
-                  passed
-                    ? "text-gray-400 dark:text-gray-500"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {timelineItem.comment}
-              </div>
-            )}
+                  <div className="font-mono text-muted-foreground">{time}</div>
+                </div>
+              ) : (
+                <div className="text-gray-400 dark:text-gray-500">-</div>
+              ))}
           </div>
         );
       })}
@@ -148,7 +147,7 @@ export default function ConferenceTableView({
           const conference = row.original;
           const passed = isDeadlinePassed(conference.firstEdition);
           return (
-            <div className="flex items-center justify-end truncate">
+            <div className="flex flex-col items-start justify-end truncate">
               <a
                 href={conference.firstEdition.link}
                 target="_blank"
@@ -162,39 +161,30 @@ export default function ConferenceTableView({
               >
                 {conference.title} {conference.firstEdition.year}
               </a>
+              <div
+                className={`max-w-[400px] text-xs truncate ${
+                  passed
+                    ? "text-gray-400 dark:text-gray-500"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {conference.description}
+              </div>
             </div>
           );
         },
         size: 80,
       }),
-      columnHelper.accessor("description", {
-        id: "full_description",
-        header: "Full Name",
-        cell: ({ getValue, row }) => {
-          const passed = isDeadlinePassed(row.original.firstEdition);
-          return (
-            <div
-              className={`min-w-[300px] text-xs whitespace-normal line-clamp-2 ${
-                passed
-                  ? "text-gray-400 dark:text-gray-500"
-                  : "text-muted-foreground"
-              }`}
-            >
-              {getValue() || "-"}
-            </div>
-          );
-        },
-        size: 300,
-      }),
-      columnHelper.accessor("firstEdition.timeline.abstract_deadline", {
+      columnHelper.accessor("firstEdition.timeline", {
         id: "abstract_deadline",
         header: "Abstract Deadline",
-        cell: ({ row }) => {
-          const timeline = row.original.firstEdition.timeline;
+        cell: ({ getValue, row }) => {
+          const timeline = getValue();
           const passed = isDeadlinePassed(row.original.firstEdition);
-          return renderTimelineItems(timeline, "abstract_deadline", passed);
+
+          return renderTimelineColumn(timeline, passed, "abstract_deadline");
         },
-        size: 200,
+        size: 150,
       }),
       columnHelper.accessor("firstEdition.timeline", {
         id: "paper_deadline",
@@ -202,20 +192,31 @@ export default function ConferenceTableView({
         cell: ({ getValue, row }) => {
           const timeline = getValue();
           const passed = isDeadlinePassed(row.original.firstEdition);
-          return renderTimelineItems(timeline, "deadline", passed);
+
+          return renderTimelineColumn(timeline, passed, "deadline");
         },
-        size: 200,
+        size: 150,
       }),
       columnHelper.accessor("firstEdition.timeline", {
         id: "notification",
         header: "Notification",
         cell: ({ getValue, row }) => {
-          // TODO: implement notification deadline
           const timeline = getValue();
           const passed = isDeadlinePassed(row.original.firstEdition);
-          return renderTimelineItems(timeline, "notification", passed);
+
+          return renderTimelineColumn(timeline, passed, "notification");
         },
-        size: 200,
+        size: 150,
+      }),
+      columnHelper.accessor("firstEdition.timeline", {
+        id: "comment",
+        header: "Stage",
+        cell: ({ getValue, row }) => {
+          const timeline = getValue();
+          const passed = isDeadlinePassed(row.original.firstEdition);
+
+          return renderTimelineColumn(timeline, passed, "comment");
+        },
       }),
       columnHelper.accessor("firstEdition.date", {
         id: "date",
@@ -224,7 +225,7 @@ export default function ConferenceTableView({
           const passed = isDeadlinePassed(row.original.firstEdition);
           return (
             <div
-              className={`min-w-[140px] whitespace-normal text-sm ${
+              className={`text-xs text-right ${
                 passed ? "text-gray-400 dark:text-gray-500" : ""
               }`}
             >
@@ -232,7 +233,7 @@ export default function ConferenceTableView({
             </div>
           );
         },
-        size: 140,
+        size: 120,
       }),
       columnHelper.accessor("firstEdition.place", {
         id: "place",
@@ -241,7 +242,7 @@ export default function ConferenceTableView({
           const passed = isDeadlinePassed(row.original.firstEdition);
           return (
             <div
-              className={`min-w-[140px] whitespace-normal text-sm ${
+              className={`min-w-[120px] text-xs whitespace-normal ${
                 passed ? "text-gray-400 dark:text-gray-500" : ""
               }`}
             >
@@ -249,7 +250,7 @@ export default function ConferenceTableView({
             </div>
           );
         },
-        size: 140,
+        size: 120,
       }),
       columnHelper.accessor("sub", {
         id: "type",
@@ -308,16 +309,36 @@ export default function ConferenceTableView({
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} style={{ width: header.getSize() }}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              ))}
+              {headerGroup.headers.map((header) => {
+                // Define background colors for timeline column headers
+                const getHeaderBackground = (columnId: string) => {
+                  switch (columnId) {
+                    case "abstract_deadline":
+                    case "paper_deadline":
+                    case "notification":
+                    case "comment":
+                      return "bg-muted/50";
+                    default:
+                      return "";
+                  }
+                };
+
+                return (
+                  <TableHead
+                    key={header.id}
+                    style={{ width: header.getSize() }}
+                    colSpan={header.colSpan}
+                    className={getHeaderBackground(header.column.id)}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                );
+              })}
             </TableRow>
           ))}
         </TableHeader>
@@ -331,19 +352,34 @@ export default function ConferenceTableView({
                   data-state={row.getIsSelected() && "selected"}
                   className={`relative ${passed ? "opacity-70" : ""}`}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className={
-                        passed ? "text-gray-500 dark:text-gray-400" : ""
+                  {row.getVisibleCells().map((cell) => {
+                    // Define background colors for timeline columns
+                    const getColumnBackground = (columnId: string) => {
+                      switch (columnId) {
+                        case "abstract_deadline":
+                        case "paper_deadline":
+                        case "notification":
+                        case "comment":
+                          return "bg-muted/25";
+                        default:
+                          return "";
                       }
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+                    };
+
+                    return (
+                      <TableCell
+                        key={cell.id}
+                        className={`${
+                          passed ? "text-gray-500 dark:text-gray-400" : ""
+                        } ${getColumnBackground(cell.column.id)}`}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               );
             })

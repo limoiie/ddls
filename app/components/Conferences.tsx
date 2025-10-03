@@ -11,7 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { format } from "date-fns";
-import { CopyrightIcon, ListIcon, TableIcon } from "lucide-react";
+import { CopyrightIcon, ListIcon, TableIcon, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
 import { Conference, ConferenceType } from "../types/api";
@@ -268,14 +268,16 @@ export default function Conferences() {
               <TableIcon className="size-4" />
             </ToggleGroupItem>
           </ToggleGroup>
-          <Input
-            type="text"
-            placeholder="Search conferences..."
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            className="flex-1"
-            style={{ minWidth: "200px" }}
-          />
+          <div className="relative flex-1" style={{ minWidth: "200px" }}>
+            <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search conferences..."
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              className="pl-8"
+            />
+          </div>
           <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
         </div>
         <div className="flex justify-between items-start gap-4">
