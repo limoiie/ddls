@@ -1,40 +1,91 @@
-This is a webapp for tracking research conference deadlines.
+# Conference Deadlines Tracker
 
-## Development
+A web application for tracking research conference deadlines.
 
-First, run the development server:
+## Features
+
+- Conference database with CCF rankings
+- Set notification times for deadlines
+- Table and card views with filtering
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- npm, yarn, pnpm, or bun
+
+### Installation
+
+1. Clone the repository
+
+   ```bash
+   git clone https://github.com/limoiie/ddls.git
+   cd ddls
+   ```
+
+2. Install dependencies
+
+   ```bash
+   npm install
+   ```
+
+3. Run the development server
+
+   ```bash
+   npm run dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+### Development Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev    # Start development server
+npm run build  # Build for production
+npm run start  # Start production server
+npm run lint   # Run linting
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Conference Data Management
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The application uses conference data from two sources:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) 
-to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Data Sources
 
-## Adding and Updating Conferences
+1. [`ccfddl/ccf-deadlines`](https://github.com/ccfddl/ccf-deadlines) repository (submodule)
+2. Local conference configurations in `data/conferences/`
 
-This project includes all the conferences from the [`ccfddl/ccf-deadlines`](https://github.com/ccfddl/ccf-deadlines.git) repository 
-by adding it as a submodule in `data/conferences/cff-deadlines`.
+### Updating Conference Data
 
-Additionally, you can add new conference data or overwrite existing data 
-by creating corresponding YAML files in the [`data/conferences`](https://github.com/limoiie/ddls/tree/main/data/conferences) directory. 
-These files should follow the format used in [`ccfddl/ccf-deadlines`](https://github.com/ccfddl/ccf-deadlines.git). 
-The structure is organized as follows:
+#### For Maintainers
 
--  [`data/conferences/types.yml`](https://github.com/limoiie/ddls/tree/main/data/conferences/custom-types.yml) - Contains custom conference categories relevant to our lab
--  [`data/conferences/**`](https://github.com/limoiie/ddls/tree/main/data/conferences) - Contains individual conference configurations
+**Preferred Method:**
 
-To overwrite or add a new conference, create a `.yml` file in the appropriate subdirectory under [`data/conferences/**`](https://github.com/limoiie/ddls/tree/main/data/conferences) with the following structure:
+1. Submit pull requests to [`ccfddl/ccf-deadlines`](https://github.com/ccfddl/ccf-deadlines)
+2. Data syncs automatically daily via GitHub Actions
+3. Manual sync: Actions → "Sync Submodule" → "Run workflow"
+
+#### Local Conference Management
+
+For lab-specific conferences, manage data locally:
+
+**Directory Structure:**
+
+```
+data/
+├── ccf-deadlines/          # Submodule (upstream data)
+└── conferences/            # Local custom data
+    ├── types.yml          # Conference categories
+    ├── AI/                # AI conferences
+    ├── CG/                # Computer Graphics
+    ├── DS/                # Distributed Systems
+    └── ...                # Other categories
+```
+
+**Adding a New Conference:**
+
+Create a `.yml` file in the appropriate category directory:
 
 ```yaml
 - title: ACCV
@@ -56,17 +107,38 @@ To overwrite or add a new conference, create a `.yml` file in the appropriate su
       place: Hanoi, Vietnam
 ```
 
-## Learn More
+**Conference Categories:**
 
-To learn more about Next.js, take a look at the following resources:
+- AI: Artificial Intelligence
+- CG: Computer Graphics
+- CT: Computational Theory
+- DB: Database Systems
+- DS: Distributed Systems
+- HI: Human-Computer Interaction
+- MX: Multidisciplinary
+- NW: Networking
+- SC: Security
+- SE: Software Engineering
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Notification System
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Set notification times for conference timelines.
 
-## Deploy on Vercel
+### Setting Notifications
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Find the conference you want to set a notification for
+2. Click on the notification placeholder in the conference card or table
+3. Choose your desired notification time using the datetime picker
+4. Click "Save" to save your notification setting
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Managing Notifications
+
+- Edit: Click on existing notification times to modify them
+- Delete: Set notification time to "None" or clear the field to remove notifications
+- View: All set notifications are displayed in the conference cards
+
+## Acknowledgments
+
+- CCF Deadlines: Thanks to the [ccfddl/ccf-deadlines](https://github.com/ccfddl/ccf-deadlines) project for the conference database
+- Next.js Team: For the React framework
+- Radix UI: For the UI component primitives
