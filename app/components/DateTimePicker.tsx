@@ -60,6 +60,8 @@ export default function DateTimePicker({
                 mode="single"
                 selected={selectedDate}
                 captionLayout="dropdown"
+                startMonth={new Date(new Date().getFullYear() - 5, 0)}
+                endMonth={new Date(new Date().getFullYear() + 5, 0)}
                 onSelect={(date) => {
                   onDateChange(date);
                   setDatePickerOpen(false);
@@ -87,7 +89,12 @@ export default function DateTimePicker({
         <Button size="sm" onClick={onSave} disabled={isSaving}>
           {isSaving ? "Saving..." : "Save"}
         </Button>
-        <Button size="sm" variant="outline" onClick={onCancel} disabled={isSaving}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSaving}
+        >
           Cancel
         </Button>
       </div>

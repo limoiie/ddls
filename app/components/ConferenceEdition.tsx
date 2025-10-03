@@ -62,7 +62,7 @@ export default function ConferenceEdition({
     const [hours, minutes, seconds] = time.split(":");
     const combined = new Date(date);
     combined.setHours(parseInt(hours), parseInt(minutes), parseInt(seconds));
-    return combined.toISOString().slice(0, 19).replace("T", " ");
+    return combined.toISOString().slice(0, 19);
   };
 
   const handleSaveNotification = async () => {
@@ -142,7 +142,9 @@ export default function ConferenceEdition({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <span>{shanghaiTime} Asia/Shanghai</span>
+            <div className="flex flex-row gap-1">
+              <span className="font-mono">{shanghaiTime}</span>Asia/Shanghai
+            </div>
           </TooltipTrigger>
           <TooltipContent>
             {originalTime} {ianaTimezone} ({conf.timezone})

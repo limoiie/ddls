@@ -19,7 +19,7 @@ import { StarIcon } from "lucide-react";
 import moment from "moment-timezone";
 import { useMemo } from "react";
 import { getIANATimezone } from "../lib/date";
-import { ConfEdition, Conference } from "../types/api";
+import { ConfEdition, Conference, Timeline } from "../types/api";
 
 interface ConferenceTableViewProps {
   conferences: Conference[];
@@ -33,6 +33,63 @@ type ConferenceRow = Conference & {
 };
 
 const columnHelper = createColumnHelper<ConferenceRow>();
+
+function renderTimelineItems(
+  timeline: Timeline[],
+  deadlineField: keyof Timeline,
+  passed: boolean
+) {
+  if (!timeline || timeline.length === 0) {
+    return (
+      <span
+        className={
+          passed ? "text-gray-400 dark:text-gray-500" : "text-muted-foreground"
+        }
+      >
+        -
+      </span>
+    );
+  }
+  return (
+    <div className="space-y-1">
+      {timeline.map((timelineItem, index) => {
+        const deadline = timelineItem[deadlineField];
+        const [date, time] = (deadline || "- -").split(" ");
+        return (
+          <div key={index} className="text-xs">
+            {deadline ? (
+              <div className="flex items-center gap-1">
+                {
+                  <div
+                    className={`font-mono font-medium ${
+                      passed ? "text-gray-400 dark:text-gray-500" : ""
+                    }`}
+                  >
+                    {date}
+                  </div>
+                }
+                <div className="font-mono text-muted-foreground">{time}</div>
+              </div>
+            ) : (
+              <div className="text-gray-400 dark:text-gray-500">-</div>
+            )}
+            {timelineItem.comment && (
+              <div
+                className={`max-w-[200px] whitespace-normal italic ${
+                  passed
+                    ? "text-gray-400 dark:text-gray-500"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {timelineItem.comment}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function isDeadlinePassed(conf: ConfEdition) {
   const ianaTimezone = getIANATimezone(conf.timezone);
@@ -135,47 +192,7 @@ export default function ConferenceTableView({
         cell: ({ row }) => {
           const timeline = row.original.firstEdition.timeline;
           const passed = isDeadlinePassed(row.original.firstEdition);
-          if (!timeline || timeline.length === 0) {
-            return (
-              <span
-                className={
-                  passed
-                    ? "text-gray-400 dark:text-gray-500"
-                    : "text-muted-foreground"
-                }
-              >
-                -
-              </span>
-            );
-          }
-          return (
-            <div className="space-y-1">
-              {timeline.map((timelineItem, index) => (
-                <div key={index} className="text-xs">
-                  {
-                    <div
-                      className={`font-medium ${
-                        passed ? "text-gray-400 dark:text-gray-500" : ""
-                      }`}
-                    >
-                      {timelineItem.abstract_deadline || "-"}
-                    </div>
-                  }
-                  {timelineItem.comment && (
-                    <div
-                      className={`max-w-[200px] whitespace-normal italic ${
-                        passed
-                          ? "text-gray-400 dark:text-gray-500"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {timelineItem.comment}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          );
+          return renderTimelineItems(timeline, "abstract_deadline", passed);
         },
         size: 200,
       }),
@@ -185,47 +202,7 @@ export default function ConferenceTableView({
         cell: ({ getValue, row }) => {
           const timeline = getValue();
           const passed = isDeadlinePassed(row.original.firstEdition);
-          if (!timeline || timeline.length === 0) {
-            return (
-              <span
-                className={
-                  passed
-                    ? "text-gray-400 dark:text-gray-500"
-                    : "text-muted-foreground"
-                }
-              >
-                -
-              </span>
-            );
-          }
-          return (
-            <div className="space-y-1">
-              {timeline.map((timelineItem, index) => (
-                <div key={index} className="text-xs">
-                  {
-                    <div
-                      className={`font-medium ${
-                        passed ? "text-gray-400 dark:text-gray-500" : ""
-                      }`}
-                    >
-                      {timelineItem.deadline || "-"}
-                    </div>
-                  }
-                  {timelineItem.comment && (
-                    <div
-                      className={`max-w-[200px] whitespace-normal italic ${
-                        passed
-                          ? "text-gray-400 dark:text-gray-500"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {timelineItem.comment}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          );
+          return renderTimelineItems(timeline, "deadline", passed);
         },
         size: 200,
       }),
@@ -236,47 +213,7 @@ export default function ConferenceTableView({
           // TODO: implement notification deadline
           const timeline = getValue();
           const passed = isDeadlinePassed(row.original.firstEdition);
-          if (!timeline || timeline.length === 0) {
-            return (
-              <span
-                className={
-                  passed
-                    ? "text-gray-400 dark:text-gray-500"
-                    : "text-muted-foreground"
-                }
-              >
-                -
-              </span>
-            );
-          }
-          return (
-            <div className="space-y-1">
-              {timeline.map((timelineItem, index) => (
-                <div key={index} className="text-xs">
-                  {
-                    <div
-                      className={`font-medium ${
-                        passed ? "text-gray-400 dark:text-gray-500" : ""
-                      }`}
-                    >
-                      {timelineItem.notification || "-"}
-                    </div>
-                  }
-                  {timelineItem.comment && (
-                    <div
-                      className={`max-w-[200px] whitespace-normal italic ${
-                        passed
-                          ? "text-gray-400 dark:text-gray-500"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {timelineItem.comment}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          );
+          return renderTimelineItems(timeline, "notification", passed);
         },
         size: 200,
       }),
@@ -287,7 +224,7 @@ export default function ConferenceTableView({
           const passed = isDeadlinePassed(row.original.firstEdition);
           return (
             <div
-              className={`min-w-[80px] whitespace-normal text-sm ${
+              className={`min-w-[140px] whitespace-normal text-sm ${
                 passed ? "text-gray-400 dark:text-gray-500" : ""
               }`}
             >
@@ -295,7 +232,7 @@ export default function ConferenceTableView({
             </div>
           );
         },
-        size: 80,
+        size: 140,
       }),
       columnHelper.accessor("firstEdition.place", {
         id: "place",
