@@ -1,16 +1,16 @@
 "use client";
 
-import { Conference } from "../types/api";
-import ConferenceEdition from "./ConferenceEdition";
-import { Badge } from "@/components/ui/badge";
-import { StarIcon } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { StarIcon } from "lucide-react";
+import { Conference } from "../types/api";
+import ConferenceEdition from "./ConferenceEdition";
 
 interface ConferenceCardProps {
   conference: Conference;

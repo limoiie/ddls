@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Conference, ConferenceType } from "../types/api";
-import ConferenceCardListView from "./ConferenceCardListView";
-import ConferenceTableView from "./ConferenceTableView";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
-import { DateRange } from "react-day-picker";
-import { format } from "date-fns";
-import { CopyrightIcon, ListIcon, TableIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { FilterBadgeGroup } from "./FilterBadgeGroup";
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
-  TooltipProvider,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { format } from "date-fns";
+import { CopyrightIcon, ListIcon, TableIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { DateRange } from "react-day-picker";
+import { Conference, ConferenceType } from "../types/api";
+import ConferenceCardListView from "./ConferenceCardListView";
+import ConferenceTableView from "./ConferenceTableView";
+import { FilterBadgeGroup } from "./FilterBadgeGroup";
 import PaginationControls from "./PaginationControls";
 
 const CCF_TAGS = ["A", "B", "C"];
@@ -34,7 +34,7 @@ export default function Conferences() {
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [customTypeMode, setCustomTypeMode] = useState(true);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] =useState<string[]>([]);
   const [selectedCCFs, setSelectedCCFs] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);

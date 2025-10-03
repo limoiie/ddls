@@ -1,23 +1,22 @@
-import { isPast, isValid } from "date-fns";
-import { formatInTimeZone } from "date-fns-tz";
-import moment from "moment-timezone";
-import { Conference, ConfEdition, Timeline } from "../types/api";
-import Countdown from "./Countdown";
-import DateTimePicker from "./DateTimePicker";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { getIANATimezone } from "../lib/date";
+import { isPast, isValid } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
+import moment from "moment-timezone";
 import { JSX, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { getIANATimezone } from "../lib/date";
+import { ConfEdition, Conference, Timeline } from "../types/api";
+import Countdown from "./Countdown";
+import DateTimePicker from "./DateTimePicker";
 
 interface ConferenceEditionProps {
   conf: ConfEdition;
@@ -63,7 +62,7 @@ export default function ConferenceEdition({
     const [hours, minutes, seconds] = time.split(":");
     const combined = new Date(date);
     combined.setHours(parseInt(hours), parseInt(minutes), parseInt(seconds));
-    return combined.toISOString().slice(0, 16);
+    return combined.toISOString().slice(0, 19).replace("T", " ");
   };
 
   const handleSaveNotification = async () => {
@@ -257,7 +256,9 @@ export default function ConferenceEdition({
                     }`}
                   >
                     <div className="flex flex-row flex-wrap gap-1">
-                      <span className="w-32 text-right">Abstract Deadline:</span>
+                      <span className="w-32 text-right">
+                        Abstract Deadline:
+                      </span>
                       <span>{formatDeadline(abstractDeadline!)}</span>
                     </div>
                   </div>

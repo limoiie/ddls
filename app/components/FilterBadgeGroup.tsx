@@ -1,12 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BrushCleaningIcon } from "lucide-react";
 import {
   Tooltip,
-  TooltipProvider,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { BrushCleaningIcon } from "lucide-react";
 
 interface FilterBadgeGroupProps {
   items: Array<{

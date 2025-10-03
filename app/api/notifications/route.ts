@@ -1,5 +1,5 @@
+import { deleteNotification, setNotification } from "@/app/lib/database";
 import { NextRequest, NextResponse } from "next/server";
-import { setNotification, deleteNotification } from "@/app/lib/database";
 
 export async function POST(request: NextRequest) {
   try {

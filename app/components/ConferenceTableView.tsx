@@ -1,15 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
-import { Conference, ConfEdition } from "../types/api";
 import { Badge } from "@/components/ui/badge";
-import { StarIcon } from "lucide-react";
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -18,8 +9,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { StarIcon } from "lucide-react";
 import moment from "moment-timezone";
+import { useMemo } from "react";
 import { getIANATimezone } from "../lib/date";
+import { ConfEdition, Conference } from "../types/api";
 
 interface ConferenceTableViewProps {
   conferences: Conference[];
@@ -202,15 +202,15 @@ export default function ConferenceTableView({
             <div className="space-y-1">
               {timeline.map((timelineItem, index) => (
                 <div key={index} className="text-xs">
-                  {timelineItem.deadline && (
+                  {
                     <div
                       className={`font-medium ${
                         passed ? "text-gray-400 dark:text-gray-500" : ""
                       }`}
                     >
-                      {timelineItem.deadline}
+                      {timelineItem.deadline || "-"}
                     </div>
-                  )}
+                  }
                   {timelineItem.comment && (
                     <div
                       className={`max-w-[200px] whitespace-normal italic ${
