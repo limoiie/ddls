@@ -40,6 +40,18 @@ export default function Conferences() {
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
   const [pageInputValue, setPageInputValue] = useState("1");
   const [viewMode, setViewMode] = useState<"list" | "table">("table");
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Mobile detection hook
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Initialize state from localStorage on client-side
   useEffect(() => {
@@ -102,6 +114,13 @@ export default function Conferences() {
   useEffect(() => {
     localStorage.setItem("viewMode", viewMode);
   }, [viewMode]);
+
+  // Override viewMode to always be "list" on mobile devices
+  useEffect(() => {
+    if (isMobile) {
+      setViewMode("list");
+    }
+  }, [isMobile]);
 
   // Reset page index when filters change
   useEffect(() => {
@@ -225,62 +244,74 @@ export default function Conferences() {
     return <div className="text-center py-8 text-red-500">{error}</div>;
 
   return (
-    <div className="flex flex-col items-center w-full max-w-4xl mx-auto">
+    <div className="flex flex-col items-center w-full max-w-4xl mx-auto px-4 sm:px-0">
       <div className="mb-6 space-y-4 w-full">
-        <div className="flex flex-wrap gap-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Toggle
-                  id="custom-type-mode"
+        {/* Mobile-optimized header controls */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Top row: Controls and search */}
+          <div className="flex flex-col sm:flex-row gap-4 flex-1">
+            <div className="flex gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Toggle
+                      id="custom-type-mode"
+                      variant="outline"
+                      onClick={() => setCustomTypeMode(!customTypeMode)}
+                      className={`${
+                        customTypeMode ? "bg-blue-100 border-blue-200" : ""
+                      }`}
+                    >
+                      <CopyrightIcon
+                        className={`size-4 ${
+                          customTypeMode ? "text-blue-500" : ""
+                        }`}
+                      />
+                    </Toggle>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {customTypeMode
+                      ? "Show full CCF conferences"
+                      : "Show custom CCF conferences"}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              {!isMobile && (
+                <ToggleGroup
+                  type="single"
+                  value={viewMode}
+                  onValueChange={(value) =>
+                    setViewMode((value || viewMode) as "list" | "table")
+                  }
                   variant="outline"
-                  onClick={() => setCustomTypeMode(!customTypeMode)}
-                  className={`${
-                    customTypeMode ? "bg-blue-100 border-blue-200" : ""
-                  }`}
                 >
-                  <CopyrightIcon
-                    className={`size-4 ${
-                      customTypeMode ? "text-blue-500" : ""
-                    }`}
-                  />
-                </Toggle>
-              </TooltipTrigger>
-              <TooltipContent>
-                {customTypeMode
-                  ? "Show full CCF conferences"
-                  : "Show custom CCF conferences"}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <ToggleGroup
-            type="single"
-            value={viewMode}
-            onValueChange={(value) =>
-              setViewMode((value || viewMode) as "list" | "table")
-            }
-            variant="outline"
-          >
-            <ToggleGroupItem value="list">
-              <ListIcon className="size-4" />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="table">
-              <TableIcon className="size-4" />
-            </ToggleGroupItem>
-          </ToggleGroup>
-          <div className="relative flex-1" style={{ minWidth: "200px" }}>
-            <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search conferences..."
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              className="pl-8"
-            />
+                  <ToggleGroupItem value="list">
+                    <ListIcon className="size-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="table">
+                    <TableIcon className="size-4" />
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              )}
+            </div>
+            <div className="relative flex-1" style={{ minWidth: "200px" }}>
+              <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search conferences..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                className="pl-8"
+              />
+            </div>
           </div>
-          <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
+          {/* Date picker on its own row on mobile */}
+          <div className="w-full sm:w-auto">
+            <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
+          </div>
         </div>
-        <div className="flex justify-between items-start gap-4">
+        {/* Mobile-optimized filter sections */}
+        <div className="flex flex-col lg:flex-row lg:justify-between gap-4">
           <FilterBadgeGroup
             items={types.map((type) => ({
               id: type.sub,

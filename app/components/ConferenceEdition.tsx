@@ -143,7 +143,8 @@ export default function ConferenceEdition({
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="flex flex-row gap-1">
-              <span className="font-mono">{shanghaiTime}</span>Asia/Shanghai
+              <span className="font-mono font-bold">{shanghaiTime}</span>
+              {/* <span className="hidden sm:block">Asia/Shanghai</span> */}
             </div>
           </TooltipTrigger>
           <TooltipContent>
@@ -158,7 +159,9 @@ export default function ConferenceEdition({
   return (
     <div
       key={conf.id}
-      className={`flex flex-row gap-4 relative ${passed ? "opacity-70" : ""}`}
+      className={`flex flex-col lg:flex-row gap-4 relative ${
+        passed ? "opacity-70" : ""
+      }`}
     >
       {passed && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -169,14 +172,14 @@ export default function ConferenceEdition({
           </div>
         </div>
       )}
-      <div className="w-1/2 flex justify-between items-start">
+      <div className="w-full lg:w-1/2 flex justify-between items-start">
         <div className="w-full flex flex-col">
-          <div className="flex flex-row flex-wrap gap-4 items-end">
+          <div className="flex flex-row gap-4 items-start justify-between">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <h3
-                    className={`font-semibold ${
+                    className={`font-semibold whitespace-nowrap ${
                       passed ? "text-gray-500 dark:text-gray-400" : ""
                     }`}
                   >
@@ -188,28 +191,30 @@ export default function ConferenceEdition({
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <p
-              className={`text-sm ${
-                passed
-                  ? "text-gray-400 dark:text-gray-500"
-                  : "text-gray-600 dark:text-gray-400"
-              }`}
-            >
-              {conf.date}
-            </p>
+            <div className="flex flex-col items-end gap-1">
+              <p
+                className={`text-sm ${
+                  passed
+                    ? "text-gray-400 dark:text-gray-500"
+                    : "text-gray-600 dark:text-gray-400"
+                }`}
+              >
+                {conf.date}
+              </p>
+              <p
+                className={`text-sm whitespace-nowrap ${
+                  passed
+                    ? "text-gray-400 dark:text-gray-500"
+                    : "text-gray-600 dark:text-gray-400"
+                }`}
+              >
+                {conf.place}
+              </p>
+            </div>
           </div>
-          <p
-            className={`text-sm ${
-              passed
-                ? "text-gray-400 dark:text-gray-500"
-                : "text-gray-600 dark:text-gray-400"
-            }`}
-          >
-            {conf.place}
-          </p>
-          <div className="flex flex-row gap-1 text-sm">
+          <div className="flex flex-col sm:flex-row gap-1 text-sm">
             <p
-              className={`${
+              className={`hidden sm:block ${
                 passed
                   ? "text-gray-400 dark:text-gray-500"
                   : "text-gray-600 dark:text-gray-400"
@@ -221,7 +226,7 @@ export default function ConferenceEdition({
               href={conf.link}
               target="_blank"
               rel="noopener noreferrer"
-              className={`overflow-hidden text-ellipsis whitespace-nowrap ${
+              className={`break-all ${
                 passed
                   ? "text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400"
                   : "text-blue-600 dark:text-blue-400 hover:underline"
@@ -232,7 +237,7 @@ export default function ConferenceEdition({
           </div>
         </div>
       </div>
-      <div className="w-1/2 flex flex-col gap-4">
+      <div className="w-full lg:w-1/2 flex flex-col gap-4 items-start">
         {conf.timeline.slice(0, 1).map((timeline: Timeline, idx: number) => {
           const deadline = toDate(timeline.deadline);
           const abstractDeadline = toDate(timeline.abstract_deadline);
@@ -257,11 +262,13 @@ export default function ConferenceEdition({
                         : "text-gray-600 dark:text-gray-400"
                     }`}
                   >
-                    <div className="flex flex-row flex-wrap gap-1">
-                      <span className="w-32 text-right">
+                    <div className="flex flex-row gap-1">
+                      <span className="w-32 text-right font-medium">
                         Abstract Deadline:
                       </span>
-                      <span>{formatDeadline(abstractDeadline!)}</span>
+                      <span className="break-all">
+                        {formatDeadline(abstractDeadline!)}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -273,9 +280,13 @@ export default function ConferenceEdition({
                         : "text-gray-600 dark:text-gray-400"
                     }`}
                   >
-                    <div className="flex flex-row flex-wrap gap-1">
-                      <span className="w-32 text-right">Paper Deadline:</span>
-                      <span>{formatDeadline(deadline!)}</span>
+                    <div className="flex flex-row gap-1">
+                      <span className="w-32 text-right font-medium">
+                        Paper Deadline:
+                      </span>
+                      <span className="break-all">
+                        {formatDeadline(deadline!)}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -288,15 +299,17 @@ export default function ConferenceEdition({
                       : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
-                  <div className="flex flex-row flex-wrap gap-1 items-center">
-                    <span className="w-32 text-right">Notification:</span>
+                  <div className="flex flex-row gap-1 items-start sm:items-center">
+                    <span className="w-32 text-right font-medium">
+                      Notification:
+                    </span>
                     <div className="flex flex-row gap-2 items-center">
                       {/* <span>{notification || "TBD"}</span> */}
                       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                         <PopoverTrigger asChild>
                           <div
                             onClick={handleEditStart}
-                            className="max-h-[20px] cursor-pointer hover:underline"
+                            className="cursor-pointer hover:underline break-all"
                           >
                             {formatDeadline(notification || "TBD")}
                           </div>
