@@ -1,10 +1,14 @@
 name: Sync Submodule
 
+# DISABLED: This workflow is replaced by the update-conferences script
+# Use: npm run update-conferences:start to enable periodic updates
+# Use: npm run update-conferences:once for one-time updates
+
 on:
-  schedule:
-    # Run every day at 2 AM UTC (adjust timezone as needed)
-    - cron: '0 2 * * *'
-  workflow_dispatch: # Allow manual triggering
+  # schedule:
+  #   # Run every day at 2 AM UTC (adjust timezone as needed)
+  #   - cron: '0 2 * * *'
+  # workflow_dispatch: # Allow manual triggering
 
 jobs:
   sync-submodule:

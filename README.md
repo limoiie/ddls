@@ -63,8 +63,53 @@ The application uses conference data from two sources:
 **Preferred Method:**
 
 1. Submit pull requests to [`ccfddl/ccf-deadlines`](https://github.com/ccfddl/ccf-deadlines)
-2. Data syncs automatically daily via GitHub Actions
-3. Manual sync: Actions → "Sync Submodule" → "Run workflow"
+2. Data syncs automatically via the update script (replaces GitHub Actions)
+3. Manual sync: `npm run update-conferences:once`
+
+#### Automated Updates
+
+The project includes a Node.js script for automated conference data updates:
+
+**Configuration:**
+- Update interval: Configurable (default: 24 hours)
+- Retry logic: 3 attempts with 30-second delays
+- Logging: Automatic logging to `update.log`
+
+**Available Commands:**
+```bash
+# Start periodic updates (runs in background)
+npm run update-conferences:start
+
+# Stop periodic updates
+npm run update-conferences:stop
+
+# Run one-time update
+npm run update-conferences:once
+
+# Show current status
+npm run update-conferences status
+
+# Configure update interval (hours)
+npm run update-conferences set-interval 12
+
+# Configure retry attempts
+npm run update-conferences set-retries 5
+
+# View/modify configuration
+npm run update-conferences config
+```
+
+**Configuration File:**
+The script uses `update-config.json` for settings:
+```json
+{
+  "intervalHours": 24,
+  "maxRetries": 3,
+  "submodulePath": "data/ccf-deadlines",
+  "commitMessage": "chore: update ccf-deadlines submodule",
+  "logFile": "update.log"
+}
+```
 
 #### Local Conference Management
 
