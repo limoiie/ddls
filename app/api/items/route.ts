@@ -64,7 +64,6 @@ export async function GET(request: NextRequest) {
 
   // Read notification times from database
   const notifications = getAllNotifications();
-  console.log("Notifications", notifications);
 
   // Inflate notification times into timelines
   const itemsWithNotifications = items.map((item) => ({

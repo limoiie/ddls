@@ -50,8 +50,7 @@ export function setNotification(confEditionId: string, notification: string): vo
     INSERT OR REPLACE INTO notification_times (conf_edition_id, notification_time, updated_at)
     VALUES (?, ?, CURRENT_TIMESTAMP)
   `);
-  const result = stmt.run(confEditionId, notification);
-  console.log("Set notification time for", confEditionId, notification, result);
+  stmt.run(confEditionId, notification);
 }
 
 export function deleteNotification(confEditionId: string): void {
