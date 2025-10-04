@@ -18,14 +18,16 @@ import {
 import { StarIcon } from "lucide-react";
 import { useMemo } from "react";
 import {
-  isDatePassed,
+  getIANATimezone,
   isFixedFutureDate,
   isSubmissionPassed,
   isTimelinePassed,
+  parseDate,
   parseMoment,
 } from "../lib/date";
 import { Conference, Timeline } from "../types/api";
 import Countdown from "./Countdown";
+import DateTimeline from "./DateTimeline";
 
 interface ConferenceTableViewProps {
   conferences: Conference[];
@@ -54,12 +56,17 @@ function renderTimelineColumn(
   return (
     <div className="space-y-1">
       {timeline.map((timelineItem, index) => {
-        const comment = column === "comment" ? timelineItem.comment : null;
-        const deadline = column === "comment" ? null : timelineItem[column];
-        const isDeadlinePassed = deadline && isDatePassed(deadline, timezone);
-        const [date, time] = deadline
-          ? deadline.replace("T", " ").split(" ")
-          : ["-", "-"];
+        const defaultComment =
+          timeline.length === 1 ? "Main stage" : `Stage ${index + 1}`;
+        const comment =
+          column === "comment" ? timelineItem.comment || defaultComment : null;
+        const deadline =
+          column !== "comment"
+            ? parseDate(timelineItem[column], timezone)
+            : null;
+
+        const isDeadlineTBD = deadline === "TBD";
+        const isDeadlineFixed = deadline && deadline !== "TBD";
 
         const timelinePassed = isTimelinePassed(timelineItem, timezone);
         const timelineActive = !isPreviousTimelineActive && !timelinePassed;
@@ -78,26 +85,22 @@ function renderTimelineColumn(
               <div className="border-b border-gray-200 dark:border-gray-700 mb-1"></div>
             )}
 
-            {column === "comment" ? (
+            {comment ? (
               <div
                 className={`min-w-[120px] whitespace-normal italic line-clamp-2`}
               >
-                {comment ||
-                  (timeline.length === 1 ? "Main stage" : `Stage ${index + 1}`)}
+                {comment}
               </div>
-            ) : deadline ? (
-              <div
-                className={`flex items-center gap-1 ${
-                  isDeadlinePassed
-                    ? "line-through text-gray-400 dark:text-gray-500"
-                    : ""
-                }`}
-              >
-                <div className={"font-mono font-medium"}>{date}</div>
-                <div className="font-mono opacity-50">{time}</div>
-              </div>
+            ) : isDeadlineFixed ? (
+              <DateTimeline
+                deadline={deadline}
+                ianaTimezone={getIANATimezone(timezone)}
+                timezone={timezone}
+              />
+            ) : isDeadlineTBD ? (
+              <div>TBD</div>
             ) : (
-              <div className="opacity-50">-</div>
+              <div>-</div>
             )}
           </div>
         );
@@ -467,11 +470,11 @@ export default function ConferenceTableView({
             className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
             style={{ top: `${top}px`, height: `${rowHeight}px` }}
           >
-            <div className="transform rotate-340">
+            {/* <div className="transform rotate-340">
               <span className="text-2xl font-bold text-red-500 opacity-50">
                 PASSED
               </span>
-            </div>
+            </div> */}
           </div>
         );
       })}

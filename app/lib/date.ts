@@ -80,3 +80,15 @@ export function parseMoment(date: string, timezone: string) {
   const ianaTimezone = getIANATimezone(timezone);
   return moment.tz(date, ianaTimezone);
 }
+
+export function parseDate(
+  date: Date | string | number | undefined | null,
+  timezone: string
+) {
+  const ianaTimezone = getIANATimezone(timezone);
+  return date
+    ? date === "TBD"
+      ? "TBD"
+      : moment.tz(date.toString(), ianaTimezone).toDate()
+    : null;
+}

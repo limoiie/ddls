@@ -13,10 +13,11 @@ import { isPast, isValid } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import moment from "moment-timezone";
 import { JSX, useState } from "react";
-import { getIANATimezone } from "../lib/date";
+import { getIANATimezone, parseDate } from "../lib/date";
 import { ConfEdition, Conference, Timeline } from "../types/api";
 import Countdown from "./Countdown";
 import DateTimePicker from "./DateTimePicker";
+import DateTimeline from "./DateTimeline";
 
 interface ConferenceEditionProps {
   conf: ConfEdition;
@@ -45,30 +46,17 @@ export default function ConferenceEdition({
   const [isSaving, setIsSaving] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
 
-  // Date and time picker states
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedTime, setSelectedTime] = useState<string>("10:30:00");
-
   // Helper functions to convert between datetime-local and date/time formats
   const parseNotificationToDateTime = (notification: string) => {
-    if (!notification) return { date: undefined, time: "10:30:00" };
+    if (!notification) return { date: undefined, time: "" };
     const date = new Date(notification);
     const time = date.toTimeString().slice(0, 8);
     return { date, time };
   };
 
-  const combineDateTime = (date: Date | undefined, time: string) => {
-    if (!date) return "";
-    const [hours, minutes, seconds] = time.split(":");
-    const combined = new Date(date);
-    combined.setHours(parseInt(hours), parseInt(minutes), parseInt(seconds));
-    return combined.toISOString().slice(0, 19);
-  };
-
-  const handleSaveNotification = async () => {
+  const handleSaveNotification = async (datetime: string) => {
     setIsSaving(true);
     try {
-      const datetimeValue = combineDateTime(selectedDate, selectedTime);
       const response = await fetch("/api/notifications", {
         method: "POST",
         headers: {
@@ -76,7 +64,7 @@ export default function ConferenceEdition({
         },
         body: JSON.stringify({
           confEditionId: conf.id,
-          notification: datetimeValue || null,
+          notification: datetime || null,
         }),
       });
 
@@ -84,7 +72,7 @@ export default function ConferenceEdition({
         throw new Error("Failed to save notification time");
       }
 
-      setNotification(datetimeValue);
+      setNotification(datetime);
       setPopoverOpen(false);
     } catch (error) {
       console.error("Error saving notification time:", error);
@@ -95,56 +83,21 @@ export default function ConferenceEdition({
   };
 
   const handleCancel = () => {
-    setNotification(conf.timeline[0]?.notification || "");
-    const { date, time } = parseNotificationToDateTime(
-      conf.timeline[0]?.notification || ""
-    );
-    setSelectedDate(date);
-    setSelectedTime(time);
     setPopoverOpen(false);
   };
 
   const handleEditStart = () => {
-    const { date, time } = parseNotificationToDateTime(notification);
-    setSelectedDate(date);
-    setSelectedTime(time);
     setPopoverOpen(true);
   };
-
-  const toDate = (
-    deadline: Date | string | number | undefined | null
-  ): Date | "TBD" | null =>
-    deadline
-      ? deadline === "TBD"
-        ? "TBD"
-        : moment.tz(deadline.toString(), ianaTimezone).toDate()
-      : null;
 
   function formatDeadline(
     deadline: Date | string | undefined | null,
     label: string
   ): JSX.Element {
-    if (deadline === "TBD") {
-      return (
-        <div className={`flex flex-row gap-1 `}>
-          <span className={`w-32 text-right font-medium`}>{label}:</span>
-          <span>TBD</span>
-        </div>
-      );
-    }
-
-    const date = moment.tz(deadline, ianaTimezone).toDate();
-    const shanghaiTime = formatInTimeZone(
-      date,
-      "Asia/Shanghai",
-      "yyyy-MM-dd HH:mm:ss"
-    );
-    const originalTime = formatInTimeZone(
-      date,
-      ianaTimezone,
-      "yyyy-MM-dd HH:mm:ss"
-    );
-    const isPassed = isPast(date);
+    const isPassed =
+      deadline &&
+      deadline !== "TBD" &&
+      isPast(moment.tz(deadline, ianaTimezone).toDate());
     return (
       <div
         className={`flex flex-row gap-1 ${
@@ -152,19 +105,11 @@ export default function ConferenceEdition({
         }`}
       >
         <span className={`w-32 text-right font-medium`}>{label}:</span>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className={`flex flex-row gap-1 font-bold`}>
-                <span className="font-mono">{shanghaiTime}</span>
-                {/* <span className="hidden sm:block">Asia/Shanghai</span> */}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              {originalTime} {ianaTimezone} ({conf.timezone})
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <DateTimeline
+          deadline={deadline}
+          ianaTimezone={ianaTimezone}
+          timezone={conf.timezone}
+        />
       </div>
     );
   }
@@ -253,27 +198,32 @@ export default function ConferenceEdition({
       </div>
       <div className="w-full lg:w-1/2 flex flex-col gap-4 items-start">
         {conf.timeline.slice(0, 1).map((timeline: Timeline, idx: number) => {
-          const deadline = toDate(timeline.deadline);
-          const abstractDeadline = toDate(timeline.abstract_deadline);
+          const deadlineDate = parseDate(timeline.deadline, conf.timezone);
+          const abstractDeadlineDate = parseDate(
+            timeline.abstract_deadline,
+            conf.timezone
+          );
+          const notificationDate = parseDate(notification, conf.timezone);
           return (
             <div key={idx} className="flex flex-col gap-2 text-sm">
               <div className="flex flex-col gap-1">
-                {isValid(abstractDeadline) && !isPast(abstractDeadline!) ? (
+                {isValid(abstractDeadlineDate) &&
+                !isPast(abstractDeadlineDate!) ? (
                   <Countdown
-                    deadline={abstractDeadline! as Date}
+                    deadline={abstractDeadlineDate! as Date}
                     label="Abstract"
                     className="text-xs sm:text-sm"
                   />
-                ) : isValid(deadline) && !isPast(deadline!) ? (
+                ) : isValid(deadlineDate) && !isPast(deadlineDate!) ? (
                   <Countdown
-                    deadline={deadline! as Date}
+                    deadline={deadlineDate! as Date}
                     label="Paper"
                     className="text-xs sm:text-sm"
                   />
                 ) : (
                   <div />
                 )}
-                {abstractDeadline && (
+                {abstractDeadlineDate && (
                   <div
                     className={`${
                       passed
@@ -283,12 +233,15 @@ export default function ConferenceEdition({
                   >
                     <div className="flex flex-row gap-1">
                       <span className="break-all">
-                        {formatDeadline(abstractDeadline!, "Abstract Deadline")}
+                        {formatDeadline(
+                          abstractDeadlineDate!,
+                          "Abstract Deadline"
+                        )}
                       </span>
                     </div>
                   </div>
                 )}
-                {deadline && (
+                {deadlineDate && (
                   <div
                     className={`${
                       passed
@@ -298,7 +251,7 @@ export default function ConferenceEdition({
                   >
                     <div className="flex flex-row gap-1">
                       <span className="break-all">
-                        {formatDeadline(deadline!, "Paper Deadline")}
+                        {formatDeadline(deadlineDate!, "Paper Deadline")}
                       </span>
                     </div>
                   </div>
@@ -322,18 +275,21 @@ export default function ConferenceEdition({
                             className="cursor-pointer hover:underline break-all"
                           >
                             {formatDeadline(
-                              notification || "TBD",
+                              notificationDate || "TBD",
                               "Notification"
                             )}
                           </div>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-4" align="center">
                           <DateTimePicker
-                            selectedDate={selectedDate}
-                            selectedTime={selectedTime}
+                            defaultDate={
+                              parseNotificationToDateTime(notification).date
+                            }
+                            defaultTime={
+                              parseNotificationToDateTime(notification).time
+                            }
+                            timeZone={conf.timezone}
                             isSaving={isSaving}
-                            onDateChange={setSelectedDate}
-                            onTimeChange={setSelectedTime}
                             onSave={handleSaveNotification}
                             onCancel={handleCancel}
                           />
