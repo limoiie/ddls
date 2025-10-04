@@ -1,3 +1,6 @@
+import moment from "moment";
+import { ConfEdition, Timeline } from "../types/api";
+
 export function getIANATimezone(timezone: string): string {
   // Map common timezone abbreviations to IANA timezone names
   const timezoneMap: { [key: string]: string } = {
@@ -37,4 +40,43 @@ export function getIANATimezone(timezone: string): string {
 
   // Convert UTC offset to IANA timezone
   return timezoneMap[timezone] || "UTC";
+}
+
+export function isSubmissionPassed(conf: ConfEdition) {
+  return conf.timeline.every((timeline) =>
+    isTimelinePassed(timeline, conf.timezone)
+  );
+}
+
+export function isTimelinePassed(timeline: Timeline, timezone: string) {
+  // Empty deadline means passed
+  return (
+    (!timeline.deadline && !timeline.abstract_deadline) ||
+    isDatePassed(
+      timeline.deadline || timeline.abstract_deadline || "",
+      timezone
+    )
+  );
+}
+
+export function isDatePassed(date: string, timezone: string) {
+  if (date === "TBD") {
+    return false;
+  }
+  return parseMoment(date, timezone).isBefore(moment());
+}
+
+export function isFixedFutureDate(
+  date: string | undefined | null,
+  timezone: string
+) {
+  if (!date || date === "TBD") {
+    return false;
+  }
+  return parseMoment(date, timezone).isAfter(moment());
+}
+
+export function parseMoment(date: string, timezone: string) {
+  const ianaTimezone = getIANATimezone(timezone);
+  return moment.tz(date, ianaTimezone);
 }

@@ -2,12 +2,21 @@
 
 import { useEffect, useState } from "react";
 
+import { cn } from "@/lib/utils";
+
 interface CountdownProps {
   deadline: Date;
-  type: "abstract" | "paper";
+  label?: string;
+  className?: string;
+  variant?: "default" | "compact";
 }
 
-export default function Countdown({ deadline, type }: CountdownProps) {
+export default function Countdown({
+  deadline,
+  label,
+  className,
+  variant = "default",
+}: CountdownProps) {
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
@@ -42,26 +51,48 @@ export default function Countdown({ deadline, type }: CountdownProps) {
   if (!timeLeft) return null;
 
   return (
-    <div className="flex items-center gap-2 text-sm font-mono">
+    <div
+      className={cn("flex items-center justify-end gap-2 font-mono", className)}
+    >
       <div className="flex gap-1 flex-wrap">
         {timeLeft.days > 0 && (
-          <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded text-xs sm:text-sm">
+          <span
+            className={cn(
+              "px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded",
+              variant === "compact" && "px-1"
+            )}
+          >
             {timeLeft.days}d
           </span>
         )}
-        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded text-xs sm:text-sm">
+        <span
+          className={cn(
+            "px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded",
+            variant === "compact" && "px-1"
+          )}
+        >
           {timeLeft.hours.toString().padStart(2, "0")}h
         </span>
-        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded text-xs sm:text-sm">
+        <span
+          className={cn(
+            "px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded",
+            variant === "compact" && "px-1"
+          )}
+        >
           {timeLeft.minutes.toString().padStart(2, "0")}m
         </span>
-        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded text-xs sm:text-sm">
+        <span
+          className={cn(
+            "px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded",
+            variant === "compact" && "px-1"
+          )}
+        >
           {timeLeft.seconds.toString().padStart(2, "0")}s
         </span>
       </div>
-      <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
-        {type === "abstract" ? "Abstract" : "Paper"}
-      </span>
+      {label && (
+        <span className="text-gray-500 dark:text-gray-400">{label}</span>
+      )}
     </div>
   );
 }

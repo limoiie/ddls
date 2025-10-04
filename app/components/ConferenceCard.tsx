@@ -68,15 +68,23 @@ export default function ConferenceCard({
         )}
       </div>
       <div className="flex flex-wrap gap-2">
-        <Badge variant="outline" className="text-xs sm:text-sm">{conference.sub}</Badge>
+        <Badge variant="outline" className="text-xs">
+          {conference.sub}
+        </Badge>
         {conference.rank.ccf && (
-          <Badge variant="outline" className="text-xs sm:text-sm">CCF: {conference.rank.ccf}</Badge>
+          <Badge variant="outline" className="text-xs">
+            CCF: {conference.rank.ccf}
+          </Badge>
         )}
         {conference.rank.core && (
-          <Badge variant="outline" className="text-xs sm:text-sm">CORE: {conference.rank.core}</Badge>
+          <Badge variant="outline" className="text-xs">
+            CORE: {conference.rank.core}
+          </Badge>
         )}
         {conference.rank.thcpl && (
-          <Badge variant="outline" className="text-xs sm:text-sm">THCPL: {conference.rank.thcpl}</Badge>
+          <Badge variant="outline" className="text-xs">
+            THCPL: {conference.rank.thcpl}
+          </Badge>
         )}
       </div>
     </div>

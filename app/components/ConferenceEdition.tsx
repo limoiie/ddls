@@ -121,10 +121,16 @@ export default function ConferenceEdition({
       : null;
 
   function formatDeadline(
-    deadline: Date | string | undefined | null
+    deadline: Date | string | undefined | null,
+    label: string
   ): JSX.Element {
     if (deadline === "TBD") {
-      return <span>TBD</span>;
+      return (
+        <div className={`flex flex-row gap-1 `}>
+          <span className={`w-32 text-right font-medium`}>{label}:</span>
+          <span>TBD</span>
+        </div>
+      );
     }
 
     const date = moment.tz(deadline, ianaTimezone).toDate();
@@ -138,20 +144,28 @@ export default function ConferenceEdition({
       ianaTimezone,
       "yyyy-MM-dd HH:mm:ss"
     );
+    const isPassed = isPast(date);
     return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="flex flex-row gap-1">
-              <span className="font-mono font-bold">{shanghaiTime}</span>
-              {/* <span className="hidden sm:block">Asia/Shanghai</span> */}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            {originalTime} {ianaTimezone} ({conf.timezone})
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <div
+        className={`flex flex-row gap-1 ${
+          isPassed ? "text-gray-400 dark:text-gray-500 line-through" : ""
+        }`}
+      >
+        <span className={`w-32 text-right font-medium`}>{label}:</span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className={`flex flex-row gap-1 font-bold`}>
+                <span className="font-mono">{shanghaiTime}</span>
+                {/* <span className="hidden sm:block">Asia/Shanghai</span> */}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              {originalTime} {ianaTimezone} ({conf.timezone})
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
     );
   }
 
@@ -247,10 +261,15 @@ export default function ConferenceEdition({
                 {isValid(abstractDeadline) && !isPast(abstractDeadline!) ? (
                   <Countdown
                     deadline={abstractDeadline! as Date}
-                    type="abstract"
+                    label="Abstract"
+                    className="text-xs sm:text-sm"
                   />
                 ) : isValid(deadline) && !isPast(deadline!) ? (
-                  <Countdown deadline={deadline! as Date} type="paper" />
+                  <Countdown
+                    deadline={deadline! as Date}
+                    label="Paper"
+                    className="text-xs sm:text-sm"
+                  />
                 ) : (
                   <div />
                 )}
@@ -263,11 +282,8 @@ export default function ConferenceEdition({
                     }`}
                   >
                     <div className="flex flex-row gap-1">
-                      <span className="w-32 text-right font-medium">
-                        Abstract Deadline:
-                      </span>
                       <span className="break-all">
-                        {formatDeadline(abstractDeadline!)}
+                        {formatDeadline(abstractDeadline!, "Abstract Deadline")}
                       </span>
                     </div>
                   </div>
@@ -281,11 +297,8 @@ export default function ConferenceEdition({
                     }`}
                   >
                     <div className="flex flex-row gap-1">
-                      <span className="w-32 text-right font-medium">
-                        Paper Deadline:
-                      </span>
                       <span className="break-all">
-                        {formatDeadline(deadline!)}
+                        {formatDeadline(deadline!, "Paper Deadline")}
                       </span>
                     </div>
                   </div>
@@ -300,9 +313,6 @@ export default function ConferenceEdition({
                   }`}
                 >
                   <div className="flex flex-row gap-1 items-start sm:items-center">
-                    <span className="w-32 text-right font-medium">
-                      Notification:
-                    </span>
                     <div className="flex flex-row gap-2 items-center">
                       {/* <span>{notification || "TBD"}</span> */}
                       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
@@ -311,7 +321,10 @@ export default function ConferenceEdition({
                             onClick={handleEditStart}
                             className="cursor-pointer hover:underline break-all"
                           >
-                            {formatDeadline(notification || "TBD")}
+                            {formatDeadline(
+                              notification || "TBD",
+                              "Notification"
+                            )}
                           </div>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-4" align="center">
