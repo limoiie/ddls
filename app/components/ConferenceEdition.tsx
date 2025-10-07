@@ -130,7 +130,7 @@ export default function ConferenceEdition({
           </div>
         </div>
       )}
-      <div className="w-full lg:w-1/2 flex justify-between items-start">
+      <div className="w-full lg:w-3/4 flex justify-between items-start">
         <div className="w-full flex flex-col">
           <div className="flex flex-row gap-4 items-start justify-between">
             <TooltipProvider>
@@ -170,6 +170,16 @@ export default function ConferenceEdition({
               </p>
             </div>
           </div>
+          <div
+            className={`text-sm line-clamp-2 ${
+              passed
+                ? "text-gray-400 dark:text-gray-500"
+                : "text-gray-600 dark:text-gray-400"
+            }`}
+            title={confSeries.description}
+          >
+            {confSeries.description}
+          </div>
           <div className="flex flex-col sm:flex-row gap-1 text-sm">
             <p
               className={`hidden sm:block ${
@@ -195,7 +205,7 @@ export default function ConferenceEdition({
           </div>
         </div>
       </div>
-      <div className="w-full lg:w-1/2 flex flex-col gap-4 items-start">
+      <div className="w-full lg:w-1/2 flex flex-col gap-4 items-end">
         {conf.timeline.slice(0, 1).map((timeline: Timeline, idx: number) => {
           const deadlineDate = parseDate(timeline.deadline, conf.timezone);
           const abstractDeadlineDate = parseDate(

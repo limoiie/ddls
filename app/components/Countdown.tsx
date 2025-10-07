@@ -52,9 +52,12 @@ export default function Countdown({
 
   return (
     <div
-      className={cn("flex items-center justify-end gap-2 font-mono", className)}
+      className={cn("flex items-center justify-end gap-2", className)}
     >
-      <div className="flex gap-1 flex-wrap">
+      {label && (
+        <span className="text-gray-500 dark:text-gray-400">{label}</span>
+      )}
+      <div className="flex gap-1 flex-wrap font-mono">
         {timeLeft.days > 0 && (
           <span
             className={cn(
@@ -90,9 +93,6 @@ export default function Countdown({
           {timeLeft.seconds.toString().padStart(2, "0")}s
         </span>
       </div>
-      {label && (
-        <span className="text-gray-500 dark:text-gray-400">{label}</span>
-      )}
     </div>
   );
 }
