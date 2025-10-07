@@ -57,7 +57,7 @@ function renderTimelineColumn(
     <div className="space-y-1">
       {timeline.map((timelineItem, index) => {
         const defaultComment =
-          timeline.length === 1 ? "Main stage" : `Stage ${index + 1}`;
+          timeline.length === 1 ? "Single round" : `Round ${index + 1}`;
         const comment =
           column === "comment" ? timelineItem.comment || defaultComment : null;
         const deadline =
@@ -184,6 +184,21 @@ export default function ConferenceTableView({
         size: 80,
       }),
       columnHelper.accessor("currentEdition.timeline", {
+        id: "comment",
+        header: "Round",
+        cell: ({ getValue, row }) => {
+          const timeline = getValue();
+          const passed = isSubmissionPassed(row.original.currentEdition);
+
+          return renderTimelineColumn(
+            timeline,
+            passed,
+            "comment",
+            row.original.currentEdition.timezone
+          );
+        },
+      }),
+      columnHelper.accessor("currentEdition.timeline", {
         id: "abstract_deadline",
         header: "Abstract Deadline",
         cell: ({ getValue, row }) => {
@@ -230,21 +245,6 @@ export default function ConferenceTableView({
           );
         },
         size: 150,
-      }),
-      columnHelper.accessor("currentEdition.timeline", {
-        id: "comment",
-        header: "Stage",
-        cell: ({ getValue, row }) => {
-          const timeline = getValue();
-          const passed = isSubmissionPassed(row.original.currentEdition);
-
-          return renderTimelineColumn(
-            timeline,
-            passed,
-            "comment",
-            row.original.currentEdition.timezone
-          );
-        },
       }),
       columnHelper.accessor("currentEdition.date", {
         id: "countdown",
