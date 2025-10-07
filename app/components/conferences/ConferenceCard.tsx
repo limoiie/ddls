@@ -9,8 +9,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { StarIcon } from "lucide-react";
-import { Conference } from "../types/api";
-import ConferenceEdition from "./ConferenceEdition";
+import { ConfEdition, Conference } from "../../types/api";
+import ConferenceEdition from "../conferences/ConferenceEdition";
 
 interface ConferenceCardProps {
   conference: Conference;
@@ -56,7 +56,7 @@ export default function ConferenceCard({
                 History Conferences
               </AccordionTrigger>
               <AccordionContent className="flex flex-col gap-3 pt-6">
-                {conference.confs.slice(1).map((conf) => (
+                {conference.confs.slice(1).map((conf: ConfEdition) => (
                   <div key={conf.id} className="flex flex-col gap-3">
                     <Separator />
                     <ConferenceEdition conf={conf} confSeries={conference} />

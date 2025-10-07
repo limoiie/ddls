@@ -1,5 +1,16 @@
 "use client";
 
+import Countdown from "@/app/components/Countdown";
+import DateTimeline from "@/app/components/DateTimeline";
+import {
+  getIANATimezone,
+  isFixedFutureDate,
+  isSubmissionPassed,
+  isTimelinePassed,
+  parseDate,
+  parseMoment,
+} from "@/app/lib/date";
+import { Conference, Timeline } from "@/app/types/api";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -17,17 +28,6 @@ import {
 } from "@tanstack/react-table";
 import { StarIcon } from "lucide-react";
 import { useMemo } from "react";
-import {
-  getIANATimezone,
-  isFixedFutureDate,
-  isSubmissionPassed,
-  isTimelinePassed,
-  parseDate,
-  parseMoment,
-} from "../lib/date";
-import { Conference, Timeline } from "../types/api";
-import Countdown from "./Countdown";
-import DateTimeline from "./DateTimeline";
 
 interface ConferenceTableViewProps {
   conferences: Conference[];

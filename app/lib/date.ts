@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment from "moment-timezone";
 import { ConfEdition, Timeline } from "../types/api";
 
 export function getIANATimezone(timezone: string): string {

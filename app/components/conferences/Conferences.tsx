@@ -11,14 +11,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { format } from "date-fns";
-import { CopyrightIcon, ListIcon, TableIcon, SearchIcon } from "lucide-react";
+import { CopyrightIcon, ListIcon, SearchIcon, TableIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
-import { Conference, ConferenceType } from "../types/api";
+import { Conference, ConferenceType } from "../../types/api";
 import ConferenceCardListView from "./ConferenceCardListView";
 import ConferenceTableView from "./ConferenceTableView";
-import { FilterBadgeGroup } from "./FilterBadgeGroup";
-import PaginationControls from "./PaginationControls";
+import { FilterBadgeGroup } from "../FilterBadgeGroup";
+import PaginationControls from "../PaginationControls";
 
 const CCF_TAGS = ["A", "B", "C"];
 const DEBOUNCE_DELAY = 300; // 300ms delay
@@ -34,7 +34,7 @@ export default function Conferences() {
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [customTypeMode, setCustomTypeMode] = useState(true);
-  const [selectedTypes, setSelectedTypes] =useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCCFs, setSelectedCCFs] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
@@ -47,10 +47,10 @@ export default function Conferences() {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768); // md breakpoint
     };
-    
+
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Initialize state from localStorage on client-side
@@ -84,6 +84,16 @@ export default function Conferences() {
     if (savedViewMode) {
       setViewMode(savedViewMode as "list" | "table");
     }
+
+    const savedPageIndex = localStorage.getItem("pageIndex");
+    if (savedPageIndex) {
+      setPageIndex(JSON.parse(savedPageIndex));
+    }
+
+    const savedPageSize = localStorage.getItem("pageSize");
+    if (savedPageSize) {
+      setPageSize(JSON.parse(savedPageSize));
+    }
   }, []);
 
   // Save filter options to localStorage when they change
@@ -114,6 +124,14 @@ export default function Conferences() {
   useEffect(() => {
     localStorage.setItem("viewMode", viewMode);
   }, [viewMode]);
+
+  useEffect(() => {
+    localStorage.setItem("pageIndex", JSON.stringify(pageIndex));
+  }, [pageIndex]);
+
+  useEffect(() => {
+    localStorage.setItem("pageSize", JSON.stringify(pageSize));
+  }, [pageSize]);
 
   // Override viewMode to always be "list" on mobile devices
   useEffect(() => {
