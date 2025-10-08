@@ -303,9 +303,10 @@ export default function ConferenceTableView({
           const passed = isSubmissionPassed(row.original.currentEdition);
           return (
             <div
-              className={`min-w-[120px] text-xs whitespace-normal ${
+              className={`min-w-[120px] text-xs whitespace-normal line-clamp-2 ${
                 passed ? "text-gray-400 dark:text-gray-500" : ""
               }`}
+              title={getValue()}
             >
               {getValue()}
             </div>
