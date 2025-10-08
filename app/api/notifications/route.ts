@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { confEditionId, notification } = body;
+    const { confEditionId, timelineIdx, notification } = body;
 
     if (!confEditionId) {
       return NextResponse.json(
@@ -15,10 +15,10 @@ export async function POST(request: NextRequest) {
 
     if (notification === null || notification === undefined) {
       // Delete the notification time if it's null/undefined
-      deleteNotification(confEditionId);
+      deleteNotification(confEditionId + "." + timelineIdx);
     } else {
       // Set the notification time
-      setNotification(confEditionId, notification);
+      setNotification(confEditionId + "." + timelineIdx, notification);
     }
 
     return NextResponse.json({ success: true });
@@ -35,15 +35,16 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const confEditionId = searchParams.get("confEditionId");
+    const timelineIdx = searchParams.get("timelineIdx");
 
-    if (!confEditionId) {
+    if (!confEditionId || !timelineIdx) {
       return NextResponse.json(
-        { error: "confEditionId is required" },
+        { error: "confEditionId and timelineIdx are required" },
         { status: 400 }
       );
     }
 
-    deleteNotification(confEditionId);
+    deleteNotification(confEditionId + "." + timelineIdx);
 
     return NextResponse.json({ success: true });
   } catch (error) {

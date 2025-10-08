@@ -70,9 +70,10 @@ export async function GET(request: NextRequest) {
     ...item,
     confs: item.confs.map((conf) => ({
       ...conf,
-      timeline: conf.timeline.map((timeline) => ({
+      timeline: conf.timeline.map((timeline, idx) => ({
         ...timeline,
-        notification: notifications[conf.id] || timeline.notification,
+        notification:
+          notifications[conf.id + "." + idx] || timeline.notification,
       })),
     })),
   }));

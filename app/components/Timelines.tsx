@@ -53,7 +53,7 @@ export default function Timelines({
     };
   }, [api]);
 
-  const onSaveNotification = async (datetime: string) => {
+  const onSaveNotification = async (idx: number, datetime: string) => {
     const response = await fetch("/api/notifications", {
       method: "POST",
       headers: {
@@ -61,6 +61,7 @@ export default function Timelines({
       },
       body: JSON.stringify({
         confEditionId: confId,
+        timelineIdx: idx,
         notification: datetime || null,
       }),
     });
@@ -98,7 +99,7 @@ export default function Timelines({
                     timeline={timeline}
                     timezone={timezone}
                     defaultComment={defaultComment}
-                    onSaveNotification={onSaveNotification}
+                    onSaveNotification={(datetime) => onSaveNotification(idx, datetime)}
                   />
                 </div>
               </CarouselItem>
