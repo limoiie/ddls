@@ -53,14 +53,16 @@ export default function TimelineCard({
       isValid(deadline) &&
       isPast(deadline);
     return (
-      <div
-        className={`flex flex-row gap-1 ${
-          isDeadlinePassed
-            ? "text-gray-400 dark:text-gray-500 line-through"
-            : ""
-        }`}
-      >
-        <span className={`w-32 text-right font-medium`}>{label}:</span>
+      <div className={`flex flex-row gap-1`}>
+        <span
+          className={`w-32 text-right ${
+            isDeadlinePassed
+              ? "text-gray-400 dark:text-gray-500 line-through"
+              : "text-gray-600 dark:text-gray-400"
+          }`}
+        >
+          {label}:
+        </span>
         <DateTimeline
           deadline={deadline}
           ianaTimezone={ianaTimezone}
@@ -78,7 +80,9 @@ export default function TimelineCard({
     return { date, time };
   }
 
-  const notificationDate = notification ? new Date(notification) : undefined;
+  const notificationDate = notification
+    ? parseDate(notification, timezone)
+    : undefined;
 
   return (
     <div className="w-full flex flex-col gap-2 text-sm">

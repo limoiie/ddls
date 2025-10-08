@@ -9,6 +9,7 @@ interface CountdownProps {
   label?: string;
   className?: string;
   variant?: "default" | "compact";
+  animated?: boolean;
 }
 
 export default function Countdown({
@@ -16,6 +17,7 @@ export default function Countdown({
   label,
   className,
   variant = "default",
+  animated = true,
 }: CountdownProps) {
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
@@ -50,48 +52,50 @@ export default function Countdown({
 
   if (!timeLeft) return null;
 
+  const renderTimeUnit = (value: number, unit: string, isDays = false) => {
+    const baseClasses = cn(
+      "px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded",
+      variant === "compact" && "px-1"
+    );
+
+    if (animated) {
+      const countdownClasses = cn(
+        "countdown",
+        isDays && value > 99 ? "bit3" : "bit2"
+      );
+
+      return (
+        <div className={baseClasses}>
+          <div className={countdownClasses}>
+            <div
+              className="countdown-item text-center"
+              style={{ "--value": value } as React.CSSProperties}
+            />
+          </div>
+          <span className="ml-1 uppercase">{unit}</span>
+        </div>
+      );
+    }
+
+    return (
+      <span className={baseClasses}>
+        {isDays
+          ? `${value}${unit}`
+          : `${value.toString().padStart(2, "0")}${unit}`}
+      </span>
+    );
+  };
+
   return (
-    <div
-      className={cn("flex items-center justify-end gap-2", className)}
-    >
+    <div className={cn("flex items-center justify-end gap-2", className)}>
       {label && (
         <span className="text-gray-500 dark:text-gray-400">{label}</span>
       )}
-      <div className="flex gap-1 flex-wrap font-mono">
-        {timeLeft.days > 0 && (
-          <span
-            className={cn(
-              "px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded",
-              variant === "compact" && "px-1"
-            )}
-          >
-            {timeLeft.days}d
-          </span>
-        )}
-        <span
-          className={cn(
-            "px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded",
-            variant === "compact" && "px-1"
-          )}
-        >
-          {timeLeft.hours.toString().padStart(2, "0")}h
-        </span>
-        <span
-          className={cn(
-            "px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded",
-            variant === "compact" && "px-1"
-          )}
-        >
-          {timeLeft.minutes.toString().padStart(2, "0")}m
-        </span>
-        <span
-          className={cn(
-            "px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded",
-            variant === "compact" && "px-1"
-          )}
-        >
-          {timeLeft.seconds.toString().padStart(2, "0")}s
-        </span>
+      <div className={cn("flex gap-1 font-mono", !animated && "flex-wrap")}>
+        {timeLeft.days > 0 && <>{renderTimeUnit(timeLeft.days, "d", true)}</>}
+        {renderTimeUnit(timeLeft.hours, "h")}
+        {renderTimeUnit(timeLeft.minutes, "m")}
+        {renderTimeUnit(timeLeft.seconds, "s")}
       </div>
     </div>
   );
