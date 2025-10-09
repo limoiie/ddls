@@ -1,6 +1,6 @@
 "use client";
 
-import { Conference } from "../types/api";
+import { Conference } from "../../types/api";
 import ConferenceCard from "./ConferenceCard";
 
 interface ConferenceCardListViewProps {
