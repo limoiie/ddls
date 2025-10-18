@@ -21,12 +21,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { StarIcon } from "lucide-react";
+import { PencilIcon, StarIcon } from "lucide-react";
+import Link from "next/link";
 import { useMemo } from "react";
 
 interface ConferenceTableViewProps {
@@ -73,35 +79,41 @@ function renderTimelineColumn(
         isPreviousTimelineActive = timelineActive;
 
         return (
-          <div
-            key={index}
-            className={`h-8 text-xs 
+          <div key={index}>
+            {/* show border between timeline items */}
+            {index > 0 && (
+              <div className="border-b border-gray-200 dark:border-gray-700 mb-1" />
+            )}
+
+            <div
+              className={`flex flex-col items-center justify-center h-8 text-xs 
               ${timelineActive ? "" : "text-gray-400 dark:text-gray-500"} 
               ${timelinePassed ? "line-through" : ""} 
               ${isEditionPassed ? "" : ""}`}
-          >
-            {/* show border between timeline items */}
-            {index > 0 && (
-              <div className="border-b border-gray-200 dark:border-gray-700 mb-1"></div>
-            )}
-
-            {comment ? (
-              <div
-                className={`min-w-[120px] whitespace-normal italic line-clamp-2`}
-              >
-                {comment}
-              </div>
-            ) : isDeadlineFixed ? (
-              <DateTimeline
-                deadline={deadline}
-                ianaTimezone={getIANATimezone(timezone)}
-                timezone={timezone}
-              />
-            ) : isDeadlineTBD ? (
-              <div>TBD</div>
-            ) : (
-              <div>-</div>
-            )}
+            >
+              {comment ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={`min-w-[120px] whitespace-normal italic line-clamp-2`}
+                    >
+                      {comment}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>{comment}</TooltipContent>
+                </Tooltip>
+              ) : isDeadlineFixed ? (
+                <DateTimeline
+                  deadline={deadline}
+                  ianaTimezone={getIANATimezone(timezone)}
+                  timezone={timezone}
+                />
+              ) : isDeadlineTBD ? (
+                <div>TBD</div>
+              ) : (
+                <div>-</div>
+              )}
+            </div>
           </div>
         );
       })}
@@ -155,29 +167,45 @@ export default function ConferenceTableView({
           const conference = row.original;
           const passed = isSubmissionPassed(conference.currentEdition);
           return (
+            <a
+              href={conference.currentEdition.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`w-full font-medium text-sm truncate block text-right ${
+                passed
+                  ? "text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400"
+                  : "text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+              }`}
+              title={conference.currentEdition.link}
+            >
+              {conference.title} {conference.currentEdition.year}
+            </a>
+          );
+        },
+        size: 20,
+      }),
+      columnHelper.accessor("description", {
+        id: "description",
+        header: "Full Name",
+        cell: ({ row }) => {
+          const conference = row.original;
+          const passed = isSubmissionPassed(conference.currentEdition);
+          return (
             <div className="flex flex-col items-start justify-end truncate">
-              <a
-                href={conference.currentEdition.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`font-medium text-sm truncate block ${
-                  passed
-                    ? "text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400"
-                    : "text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                }`}
-                title={conference.currentEdition.link}
-              >
-                {conference.title} {conference.currentEdition.year}
-              </a>
-              <div
-                className={`max-w-[400px] text-xs truncate ${
-                  passed
-                    ? "text-gray-400 dark:text-gray-500"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {conference.description}
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`max-w-[320px] text-xs truncate ${
+                      passed
+                        ? "text-gray-400 dark:text-gray-500"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {conference.description}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>{conference.description}</TooltipContent>
+              </Tooltip>
             </div>
           );
         },
@@ -303,12 +331,18 @@ export default function ConferenceTableView({
           const passed = isSubmissionPassed(row.original.currentEdition);
           return (
             <div
-              className={`min-w-[120px] text-xs whitespace-normal line-clamp-2 ${
+              className={`text-xs ${
                 passed ? "text-gray-400 dark:text-gray-500" : ""
               }`}
-              title={getValue()}
             >
-              {getValue()}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="min-w-[120px] text-xs whitespace-normal line-clamp-2">
+                    {getValue()}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>{getValue()}</TooltipContent>
+              </Tooltip>
             </div>
           );
         },
@@ -347,6 +381,20 @@ export default function ConferenceTableView({
                 </Badge>
               )}
             </div>
+          );
+        },
+        size: 40,
+      }),
+      columnHelper.accessor("title", {
+        id: "edit",
+        header: "Edit",
+        cell: ({ row }) => {
+          return (
+            <Link
+              href={`https://github.com/limoiie/ccf-deadlines/edit/main/conference/${row.original.sub}/${row.original.title}.yml`}
+            >
+              <PencilIcon className="w-4 h-4" />
+            </Link>
           );
         },
         size: 40,
