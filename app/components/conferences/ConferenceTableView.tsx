@@ -2,6 +2,7 @@
 
 import Countdown from "@/app/components/Countdown";
 import DateTimeline from "@/app/components/DateTimeline";
+import ForkUrlDialog from "@/app/components/ForkUrlDialog";
 import {
   getIANATimezone,
   isFixedFutureDate,
@@ -10,6 +11,7 @@ import {
   parseDate,
   parseMoment,
 } from "@/app/lib/date";
+import { useForkUrl } from "@/app/lib/fork-url";
 import { Conference, Timeline } from "@/app/types/api";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -31,9 +33,8 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { PencilIcon, StarIcon } from "lucide-react";
-import Link from "next/link";
-import { useMemo } from "react";
+import { SquarePenIcon, StarIcon } from "lucide-react";
+import { useMemo, useState, useCallback } from "react";
 
 interface ConferenceTableViewProps {
   conferences: Conference[];
@@ -127,6 +128,10 @@ export default function ConferenceTableView({
   pinnedIds,
   onTogglePin,
 }: ConferenceTableViewProps) {
+  const { forkUrl, updateForkUrl, getFullUrl } = useForkUrl();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedSubpath, setSelectedSubpath] = useState<string>("");
+
   const data: ConferenceRow[] = useMemo(
     () =>
       conferences.map((conference) => ({
@@ -135,6 +140,16 @@ export default function ConferenceTableView({
       })),
     [conferences]
   );
+
+  const handleEditClick = useCallback((subpath: string) => {
+    setSelectedSubpath(subpath);
+    setDialogOpen(true);
+  }, []);
+
+  const handleGoto = useCallback(() => {
+    const fullUrl = getFullUrl(selectedSubpath);
+    window.open(fullUrl, "_blank");
+  }, [getFullUrl, selectedSubpath]);
 
   const columns = useMemo(
     () => [
@@ -385,22 +400,26 @@ export default function ConferenceTableView({
         },
         size: 40,
       }),
-      columnHelper.accessor("title", {
+      columnHelper.accessor("github_ccfddl_subpath", {
         id: "edit",
         header: "Edit",
         cell: ({ row }) => {
           return (
-            <Link
-              href={`https://github.com/limoiie/ccf-deadlines/edit/main/conference/${row.original.sub}/${row.original.title}.yml`}
+            <button
+              onClick={() =>
+                handleEditClick(row.original.github_ccfddl_subpath)
+              }
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+              title="Edit conference data"
             >
-              <PencilIcon className="w-4 h-4" />
-            </Link>
+              <SquarePenIcon className="w-4 h-4" />
+            </button>
           );
         },
         size: 40,
       }),
     ],
-    [pinnedIds, onTogglePin]
+    [pinnedIds, onTogglePin, handleEditClick]
   );
 
   const table = useReactTable({
@@ -527,6 +546,13 @@ export default function ConferenceTableView({
           </div>
         );
       })}
+      <ForkUrlDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        currentForkUrl={forkUrl}
+        onForkUrlChange={updateForkUrl}
+        onGoto={handleGoto}
+      />
     </div>
   );
 }
