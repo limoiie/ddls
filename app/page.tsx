@@ -1,4 +1,4 @@
-import Conferences from "./components/conferences/Conferences";
+import Conferences from "./pages/Conferences";
 
 export default function Home() {
   return (

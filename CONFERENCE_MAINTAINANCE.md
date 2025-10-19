@@ -10,32 +10,33 @@ For maintainers responsible for keeping conference deadlines up-to-date, you onl
 
 All updates can be performed directly through your web browser.
 
-### Step 1: Navigate to the Configuration
-
-Click the edit button to access the configuration page.
-
-![Click Edit Button](pics/click-edit-button.png)
-
-### Step 2: Configure Your Fork URL
+### Step 0: Open the Settings Dialog and Set the Fork URL
 
 You need to configure your fork URL because changes must be made on your forked repository rather than the original repository, as you don't have write permissions to the original repo.
 
 If you haven't forked the original repository yet, navigate to [ccfddl/ccf-deadlines](https://github.com/ccfddl/ccf-deadlines) and create a fork.
 
-![Configure Fork URL](pics/config-fork-url.png)
+![Open Settings Dialog](pics/open-settings.png)
+![Set the Fork URL](pics/config-fork-url.png)
 
-### Step 3: Make Your Changes
+### Step 1: Navigate to the Conference Configuration Page
+
+Click the edit button to access the configuration page.
+
+![Click Edit Button](pics/click-edit-button.png)
+
+### Step 2: Make Your Changes
 
 Update the configuration by adding new conference editions following the established format. Once you're done, click the `Commit changes` button to open the commit dialog.
 
 ![Change and Commit](pics/change-and-commit.png)
 
-### Step 4: Create a Pull Request
+### Step 3: Create a Pull Request
 
 After committing to your forked repository, create a pull request to request that your changes be merged into the original repository.
 
 ![Create Pull Request](pics/create-pull-request.png)
 
-### Step 5: Monitor Progress
+### Step 4: Monitor Progress
 
 Monitor the pull request page for updates and feedback from the maintainers.

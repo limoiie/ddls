@@ -11,36 +11,48 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { format } from "date-fns";
-import { CopyrightIcon, ListIcon, SearchIcon, TableIcon } from "lucide-react";
+import {
+  CopyrightIcon,
+  ListIcon,
+  SearchIcon,
+  SettingsIcon,
+  TableIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { DateRange } from "react-day-picker";
-import { Conference, ConferenceType } from "../../types/api";
-import ConferenceCardListView from "./ConferenceCardListView";
-import ConferenceTableView from "./ConferenceTableView";
-import { FilterBadgeGroup } from "../FilterBadgeGroup";
-import PaginationControls from "../PaginationControls";
+import { Conference, ConferenceType } from "../types/api";
+import { Button } from "@/components/ui/button";
+import ConferenceCardListView from "@/app/components/conferences/ConferenceCardListView";
+import ConferenceTableView from "@/app/components/conferences/ConferenceTableView";
+import { FilterBadgeGroup } from "@/app/components/FilterBadgeGroup";
+import PaginationControls from "@/app/components/PaginationControls";
+import SettingsDialog from "@/app/components/SettingsDialog";
+import { useSettings } from "@/app/lib/settings";
 
 const CCF_TAGS = ["A", "B", "C"];
 const DEBOUNCE_DELAY = 300; // 300ms delay
 
 export default function Conferences() {
+  const {
+    settings,
+    isLoaded,
+    updateSetting,
+    togglePin,
+    toggleSelectedCCF,
+    toggleSelectedType,
+    clearSelectedTypes,
+    clearSelectedCCFs,
+    resetPageIndex,
+  } = useSettings();
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [types, setTypes] = useState<ConferenceType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
-  const [customTypeMode, setCustomTypeMode] = useState(true);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [selectedCCFs, setSelectedCCFs] = useState<string[]>([]);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [pinnedIds, setPinnedIds] = useState<string[]>([]);
   const [pageInputValue, setPageInputValue] = useState("1");
-  const [viewMode, setViewMode] = useState<"list" | "table">("table");
   const [isMobile, setIsMobile] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Mobile detection hook
   useEffect(() => {
@@ -53,104 +65,35 @@ export default function Conferences() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Initialize state from localStorage on client-side
+  // Wait for settings to load before initializing
   useEffect(() => {
-    const savedCustomTypeMode = localStorage.getItem("customTypeMode");
-    if (savedCustomTypeMode) {
-      setCustomTypeMode(JSON.parse(savedCustomTypeMode));
+    if (isLoaded) {
+      setPageInputValue((settings.pageIndex + 1).toString());
     }
-
-    const savedSelectedTypes = localStorage.getItem("selectedTypes");
-    if (savedSelectedTypes) {
-      setSelectedTypes(JSON.parse(savedSelectedTypes));
-    }
-
-    const savedSelectedCCFs = localStorage.getItem("selectedCCFs");
-    if (savedSelectedCCFs) {
-      setSelectedCCFs(JSON.parse(savedSelectedCCFs));
-    }
-
-    const savedDateRange = localStorage.getItem("dateRange");
-    if (savedDateRange) {
-      setDateRange(JSON.parse(savedDateRange));
-    }
-
-    const savedPinnedIds = localStorage.getItem("pinnedConferences");
-    if (savedPinnedIds) {
-      setPinnedIds(JSON.parse(savedPinnedIds));
-    }
-
-    const savedViewMode = localStorage.getItem("viewMode");
-    if (savedViewMode) {
-      setViewMode(savedViewMode as "list" | "table");
-    }
-
-    const savedPageIndex = localStorage.getItem("pageIndex");
-    if (savedPageIndex) {
-      setPageIndex(JSON.parse(savedPageIndex));
-    }
-
-    const savedPageSize = localStorage.getItem("pageSize");
-    if (savedPageSize) {
-      setPageSize(JSON.parse(savedPageSize));
-    }
-  }, []);
-
-  // Save filter options to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem("customTypeMode", JSON.stringify(customTypeMode));
-  }, [customTypeMode]);
-
-  useEffect(() => {
-    localStorage.setItem("selectedTypes", JSON.stringify(selectedTypes));
-  }, [selectedTypes]);
-
-  useEffect(() => {
-    localStorage.setItem("selectedCCFs", JSON.stringify(selectedCCFs));
-  }, [selectedCCFs]);
-
-  useEffect(() => {
-    if (dateRange) {
-      localStorage.setItem("dateRange", JSON.stringify(dateRange));
-    } else {
-      localStorage.removeItem("dateRange");
-    }
-  }, [dateRange]);
-
-  useEffect(() => {
-    localStorage.setItem("pinnedConferences", JSON.stringify(pinnedIds));
-  }, [pinnedIds]);
-
-  useEffect(() => {
-    localStorage.setItem("viewMode", viewMode);
-  }, [viewMode]);
-
-  useEffect(() => {
-    localStorage.setItem("pageIndex", JSON.stringify(pageIndex));
-  }, [pageIndex]);
-
-  useEffect(() => {
-    localStorage.setItem("pageSize", JSON.stringify(pageSize));
-  }, [pageSize]);
+  }, [isLoaded, settings.pageIndex]);
 
   // Override viewMode to always be "list" on mobile devices
   useEffect(() => {
     if (isMobile) {
-      setViewMode("list");
+      updateSetting("viewMode", "list");
     }
-  }, [isMobile]);
+  }, [isMobile, updateSetting]);
 
   // Reset page index when filters change
   useEffect(() => {
-    setPageIndex(0);
-    setPageInputValue("1");
+    if (isLoaded) {
+      resetPageIndex();
+      setPageInputValue("1");
+    }
   }, [
-    selectedCCFs,
-    selectedTypes,
-    pinnedIds,
+    settings.selectedCCFs,
+    settings.selectedTypes,
+    settings.pinnedConferences,
     debouncedKeyword,
-    dateRange,
-    customTypeMode,
+    settings.dateRange,
+    settings.labPreferedMode,
+    isLoaded,
+    resetPageIndex,
   ]);
 
   // Add debounce effect for keyword
@@ -164,10 +107,12 @@ export default function Conferences() {
 
   // Load conference types
   useEffect(() => {
+    if (!isLoaded) return;
+
     const loadTypes = async () => {
       try {
         const params = new URLSearchParams({
-          customTypeMode: customTypeMode.toString(),
+          labPreferedMode: settings.labPreferedMode.toString(),
         });
         const response = await fetch(`/api/types?${params.toString()}`);
         if (!response.ok) {
@@ -180,54 +125,31 @@ export default function Conferences() {
       }
     };
     loadTypes();
-  }, [customTypeMode]);
-
-  const togglePin = useCallback((title: string) => {
-    setPinnedIds((prev) => {
-      const newPinnedIds = prev.includes(title)
-        ? prev.filter((id) => id !== title)
-        : [...prev, title];
-      localStorage.setItem("pinnedConferences", JSON.stringify(newPinnedIds));
-      return newPinnedIds;
-    });
-  }, []);
-
-  const toggleSelectedCCF = useCallback((tag: string) => {
-    setSelectedCCFs((prev) => {
-      const newSelectedCCFs = prev.includes(tag)
-        ? prev.filter((t) => t !== tag)
-        : [...prev, tag];
-      return newSelectedCCFs;
-    });
-  }, []);
-
-  const toggleSelectedType = useCallback((type: string) => {
-    setSelectedTypes((prev) => {
-      const newSelectedTypes = prev.includes(type)
-        ? prev.filter((t) => t !== type)
-        : [...prev, type];
-      return newSelectedTypes;
-    });
-  }, []);
+  }, [settings.labPreferedMode, isLoaded]);
 
   const fetchConferences = useCallback(async () => {
+    if (!isLoaded) return;
+
     try {
       setLoading(true);
       const params = new URLSearchParams({
         keyword: debouncedKeyword,
-        ccf: selectedCCFs.join(","),
-        types: selectedTypes.join(","),
-        pageIndex: pageIndex.toString(),
-        pageSize: pageSize.toString(),
-        pinnedIds: pinnedIds.join(","),
-        customTypeMode: customTypeMode.toString(),
+        ccf: settings.selectedCCFs.join(","),
+        types: settings.selectedTypes.join(","),
+        pageIndex: settings.pageIndex.toString(),
+        pageSize: settings.pageSize.toString(),
+        pinnedIds: settings.pinnedConferences.join(","),
+        labPreferedMode: settings.labPreferedMode.toString(),
       });
 
-      if (dateRange?.from) {
-        params.append("startDate", format(dateRange.from, "yyyy-MM-dd"));
+      if (settings.dateRange?.from) {
+        params.append(
+          "startDate",
+          format(settings.dateRange.from, "yyyy-MM-dd")
+        );
       }
-      if (dateRange?.to) {
-        params.append("endDate", format(dateRange.to, "yyyy-MM-dd"));
+      if (settings.dateRange?.to) {
+        params.append("endDate", format(settings.dateRange.to, "yyyy-MM-dd"));
       }
 
       const response = await fetch(`/api/items?${params.toString()}`);
@@ -245,13 +167,14 @@ export default function Conferences() {
     }
   }, [
     debouncedKeyword,
-    selectedCCFs,
-    selectedTypes,
-    pageIndex,
-    pageSize,
-    pinnedIds,
-    dateRange,
-    customTypeMode,
+    settings.selectedCCFs,
+    settings.selectedTypes,
+    settings.pageIndex,
+    settings.pageSize,
+    settings.pinnedConferences,
+    settings.dateRange,
+    settings.labPreferedMode,
+    isLoaded,
   ]);
 
   useEffect(() => {
@@ -261,6 +184,8 @@ export default function Conferences() {
   if (error)
     return <div className="text-center py-8 text-red-500">{error}</div>;
 
+  if (!isLoaded) return <div className="text-center py-8">Loading...</div>;
+
   return (
     <div className="flex flex-col items-center w-full max-w-4xl mx-auto px-4 sm:px-0">
       <div className="mb-6 space-y-4 w-full">
@@ -269,37 +194,49 @@ export default function Conferences() {
           {/* Top row: Controls and search */}
           <div className="flex flex-col sm:flex-row gap-4 flex-1">
             <div className="flex gap-2">
+              {/* Mode toggle button for switching between custom and full CCF conferences */}
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Toggle
                       id="custom-type-mode"
                       variant="outline"
-                      onClick={() => setCustomTypeMode(!customTypeMode)}
+                      onClick={() =>
+                        updateSetting(
+                          "labPreferedMode",
+                          !settings.labPreferedMode
+                        )
+                      }
                       className={`${
-                        customTypeMode ? "bg-blue-100 border-blue-200" : ""
+                        settings.labPreferedMode
+                          ? "bg-blue-100 border-blue-200"
+                          : ""
                       }`}
                     >
                       <CopyrightIcon
                         className={`size-4 ${
-                          customTypeMode ? "text-blue-500" : ""
+                          settings.labPreferedMode ? "text-blue-500" : ""
                         }`}
                       />
                     </Toggle>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {customTypeMode
+                    {settings.labPreferedMode
                       ? "Show full CCF conferences"
                       : "Show custom CCF conferences"}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+              {/* View mode toggle button for switching between list and table view */}
               {!isMobile && (
                 <ToggleGroup
                   type="single"
-                  value={viewMode}
+                  value={settings.viewMode}
                   onValueChange={(value) =>
-                    setViewMode((value || viewMode) as "list" | "table")
+                    updateSetting(
+                      "viewMode",
+                      (value || settings.viewMode) as "list" | "table"
+                    )
                   }
                   variant="outline"
                 >
@@ -312,6 +249,7 @@ export default function Conferences() {
                 </ToggleGroup>
               )}
             </div>
+            {/* Search box */}
             <div className="relative flex-1" style={{ minWidth: "200px" }}>
               <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
@@ -325,8 +263,21 @@ export default function Conferences() {
           </div>
           {/* Date picker on its own row on mobile */}
           <div className="w-full sm:w-auto">
-            <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
+            <DatePickerWithRange
+              date={settings.dateRange}
+              onDateChange={(dateRange) =>
+                updateSetting("dateRange", dateRange)
+              }
+            />
           </div>
+          {/* Settings button for opening the settings dialog  */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSettingsOpen(true)}
+          >
+            <SettingsIcon className="size-4" />
+          </Button>
         </div>
         {/* Mobile-optimized filter sections */}
         <div className="flex flex-col lg:flex-row lg:justify-between gap-4">
@@ -336,9 +287,9 @@ export default function Conferences() {
               label: type.sub,
               tooltip: `${type.name} (${type.name_en})`,
             }))}
-            selectedItems={selectedTypes}
+            selectedItems={settings.selectedTypes}
             onToggle={toggleSelectedType}
-            onClear={() => setSelectedTypes([])}
+            onClear={clearSelectedTypes}
             showTooltip={true}
           />
           <FilterBadgeGroup
@@ -346,47 +297,49 @@ export default function Conferences() {
               id: tag,
               label: `CCF-${tag}`,
             }))}
-            selectedItems={selectedCCFs}
+            selectedItems={settings.selectedCCFs}
             onToggle={toggleSelectedCCF}
-            onClear={() => setSelectedCCFs([])}
+            onClear={clearSelectedCCFs}
           />
         </div>
       </div>
 
-      {viewMode === "list" ? (
+      {settings.viewMode === "list" ? (
         <ConferenceCardListView
           conferences={conferences}
           loading={loading}
-          pinnedIds={pinnedIds}
+          pinnedIds={settings.pinnedConferences}
           onTogglePin={togglePin}
         />
       ) : (
         <ConferenceTableView
           conferences={conferences}
           loading={loading}
-          pinnedIds={pinnedIds}
+          pinnedIds={settings.pinnedConferences}
           onTogglePin={togglePin}
         />
       )}
 
       <PaginationControls
-        pageIndex={pageIndex}
-        pageSize={pageSize}
+        pageIndex={settings.pageIndex}
+        pageSize={settings.pageSize}
         totalPages={totalPages}
         pageInputValue={pageInputValue}
-        onPageChange={setPageIndex}
+        onPageChange={(pageIndex) => updateSetting("pageIndex", pageIndex)}
         onPageSizeChange={(size) => {
-          setPageSize(size);
-          setPageIndex(0);
+          updateSetting("pageSize", size);
+          updateSetting("pageIndex", 0);
         }}
         onPageInputChange={setPageInputValue}
         onPageInputSubmit={(value) => {
           const pageValue = parseInt(value);
           if (pageValue >= 1 && pageValue <= totalPages) {
-            setPageIndex(pageValue - 1);
+            updateSetting("pageIndex", pageValue - 1);
           }
         }}
       />
+
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 }

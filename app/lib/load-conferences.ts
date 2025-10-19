@@ -52,7 +52,7 @@ export async function readAllConferenceYamlFiles(): Promise<Conference[]> {
       allConferences.push(
         ...conferences.map((conference) => ({
           ...conference,
-          github_ccfddl_subpath: subpath,
+          relpath: subpath,
         }))
       );
     }

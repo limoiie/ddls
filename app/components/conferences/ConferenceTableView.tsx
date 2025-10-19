@@ -2,7 +2,6 @@
 
 import Countdown from "@/app/components/Countdown";
 import DateTimeline from "@/app/components/DateTimeline";
-import ForkUrlDialog from "@/app/components/ForkUrlDialog";
 import {
   getIANATimezone,
   isFixedFutureDate,
@@ -11,7 +10,7 @@ import {
   parseDate,
   parseMoment,
 } from "@/app/lib/date";
-import { useForkUrl } from "@/app/lib/fork-url";
+import { useSettings } from "@/app/lib/settings";
 import { Conference, Timeline } from "@/app/types/api";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -34,7 +33,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { SquarePenIcon, StarIcon } from "lucide-react";
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 
 interface ConferenceTableViewProps {
   conferences: Conference[];
@@ -128,9 +127,8 @@ export default function ConferenceTableView({
   pinnedIds,
   onTogglePin,
 }: ConferenceTableViewProps) {
-  const { forkUrl, updateForkUrl, getFullUrl } = useForkUrl();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedSubpath, setSelectedSubpath] = useState<string>("");
+  const { getEditLinkToForkedCcfddlRepo, getEditLinkRelToOurRepo } =
+    useSettings();
 
   const data: ConferenceRow[] = useMemo(
     () =>
@@ -141,15 +139,25 @@ export default function ConferenceTableView({
     [conferences]
   );
 
-  const handleEditClick = useCallback((subpath: string) => {
-    setSelectedSubpath(subpath);
-    setDialogOpen(true);
-  }, []);
+  const handleEditClick = useCallback(
+    (subpath: string) => {
+      if (subpath.startsWith("conferences")) {
+        // This is our own conference data, not from the ccf-deadlines repo.
+        const fullUrl = getEditLinkRelToOurRepo(
+          subpath.replace("conferences/", "")
+        );
+        // Directly open the URL in a new tab.
+        window.open(fullUrl, "_blank");
+        return;
+      }
 
-  const handleGoto = useCallback(() => {
-    const fullUrl = getFullUrl(selectedSubpath);
-    window.open(fullUrl, "_blank");
-  }, [getFullUrl, selectedSubpath]);
+      // This is the conference data from the ccf-deadlines repo.
+      const cleanSubpath = subpath.replace("ccf-deadlines/conference/", "");
+      const fullUrl = getEditLinkToForkedCcfddlRepo(cleanSubpath);
+      window.open(fullUrl, "_blank");
+    },
+    [getEditLinkToForkedCcfddlRepo, getEditLinkRelToOurRepo]
+  );
 
   const columns = useMemo(
     () => [
@@ -400,15 +408,13 @@ export default function ConferenceTableView({
         },
         size: 40,
       }),
-      columnHelper.accessor("github_ccfddl_subpath", {
+      columnHelper.accessor("relpath", {
         id: "edit",
         header: "Edit",
         cell: ({ row }) => {
           return (
             <button
-              onClick={() =>
-                handleEditClick(row.original.github_ccfddl_subpath)
-              }
+              onClick={() => handleEditClick(row.original.relpath)}
               className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
               title="Edit conference data"
             >
@@ -546,13 +552,6 @@ export default function ConferenceTableView({
           </div>
         );
       })}
-      <ForkUrlDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        currentForkUrl={forkUrl}
-        onForkUrlChange={updateForkUrl}
-        onGoto={handleGoto}
-      />
     </div>
   );
 }

@@ -13,7 +13,7 @@ export interface Conference {
   dblp: string;
   confs: ConfEdition[];
   // Additional fields for this project.
-  github_ccfddl_subpath: string; //
+  relpath: string; // relative path of the conference data file to the root data/
 }
 
 /**

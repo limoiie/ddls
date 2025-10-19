@@ -3,9 +3,9 @@ import { readCustomTypesYamlFile, readTypesYamlFile } from "@/app/lib/load-confe
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const customTypeMode = searchParams.get("customTypeMode") === "true";
+  const labPreferedMode = searchParams.get("labPreferedMode") === "true";
   try {
-    const types = await (customTypeMode
+    const types = await (labPreferedMode
       ? readCustomTypesYamlFile()
       : readTypesYamlFile());
     return NextResponse.json(types);

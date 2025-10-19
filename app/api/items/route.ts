@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       .get("types")
       ?.split(",")
       .filter((t) => t !== "") || [];
-  const customTypeMode = searchParams.get("customTypeMode") === "true";
+  const labPreferedMode = searchParams.get("labPreferedMode") === "true";
   const startDate = searchParams.get("startDate") || "";
   const endDate = searchParams.get("endDate") || "";
   const pinnedIds = searchParams.get("pinnedIds")?.split(",") || [];
@@ -90,9 +90,9 @@ export async function GET(request: NextRequest) {
 
   // Filter items based on keyword, CCF, and date range if provided and sort by the latest conference date
   const sortedFilteredItems: Conference[] = itemsWithNotifications
-    // Overwrite types if customTypeMode is enabled
+    // Overwrite types if labPreferedMode is enabled
     .map((item) => {
-      return customTypeMode
+      return labPreferedMode
         ? {
             ...item,
             sub: customTypes[item.title] || "",
