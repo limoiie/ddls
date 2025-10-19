@@ -23,34 +23,32 @@ export function readYamlFile(filepath: string): Conference[] {
 
 export async function readAllConferenceYamlFiles(): Promise<Conference[]> {
   try {
-    const uniqueConferenceNames = new Set<string>();
     const files = [customDataRoot, ccfddlDataRoot].flatMap((dir) => {
       return readdirSync(dir, { recursive: true })
+        .map((file) => file.toString())
         .filter((file) => {
-          file = typeof file === "string" ? file : file.toString();
-
           // Exclude specific files that are not conference data
-          if (file === "types.yml" || file === "custom-types.yml") {
-            return false; // Skip if the file is types.yml or custom-types.yml
-          }
-
-          // Skip if the file with identical filename has already been added, in which case,
-          //   our customized conference data will override the one from ccf-deadlines repo
-          const filename = file.split("/").pop() || "";
-          if (uniqueConferenceNames.has(filename)) {
-            return false;
-          }
-          uniqueConferenceNames.add(filename);
-
-          return file.endsWith(".yml") || file.endsWith(".yaml");
+          return (
+            file !== "types.yml" &&
+            (file.endsWith(".yml") || file.endsWith(".yaml"))
+          );
         })
         .map((file) => join(dir, file.toString()));
     });
 
     const allConferences: Conference[] = [];
+    const allConferenceNames = new Set<string>();
     for (const file of files) {
+      // Skip if the file with identical filename has already been added, in which case,
+      //   our customized conference data will override the one from ccf-deadlines repo
+      const filename = file.split("/").pop() || "";
+      if (allConferenceNames.has(filename)) {
+        continue;
+      }
+      allConferenceNames.add(filename);
+
       const conferences = readYamlFile(file as string);
-      const subpath = file.replace(ccfddlDataRoot, "").substring(1);
+      const subpath = file.replace(conferenceDataRoot, "").substring(1);
       allConferences.push(
         ...conferences.map((conference) => ({
           ...conference,

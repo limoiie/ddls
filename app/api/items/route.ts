@@ -3,7 +3,7 @@ import { getIANATimezone } from "@/app/lib/date";
 import {
   readAllConferenceYamlFiles,
   readCustomTypesYamlFile,
-} from "@/app/lib/yaml";
+} from "@/app/lib/load-conferences";
 import { ConfEdition, Conference } from "@/app/types/api";
 import { isPast } from "date-fns";
 import moment from "moment-timezone";
