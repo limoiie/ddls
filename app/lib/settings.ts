@@ -28,7 +28,7 @@ const DEFAULT_SETTINGS = {
   notificationsEnabled: true,
   theme: "system" as "light" | "dark" | "system",
   defaultViewMode: "table" as "list" | "table",
-  labPreferedMode: true,
+  labPreferredMode: true,
   selectedTypes: [] as string[],
   selectedCCFs: [] as string[],
   dateRange: undefined as DateRange | undefined,
@@ -43,7 +43,7 @@ export interface AppSettings {
   notificationsEnabled: boolean;
   theme: "light" | "dark" | "system";
   defaultViewMode: "list" | "table";
-  labPreferedMode: boolean;
+  labPreferredMode: boolean;
   selectedTypes: string[];
   selectedCCFs: string[];
   dateRange: DateRange | undefined;
@@ -97,7 +97,7 @@ export function useSettings() {
         STORAGE_KEYS.LAB_PREFERED_MODE
       );
       if (storedCustomTypeMode !== null) {
-        storedSettings.labPreferedMode = JSON.parse(storedCustomTypeMode);
+        storedSettings.labPreferredMode = JSON.parse(storedCustomTypeMode);
       }
 
       // Load selected types setting
@@ -194,7 +194,7 @@ export function useSettings() {
               value as string
             );
             break;
-          case "labPreferedMode":
+          case "labPreferredMode":
             localStorage.setItem(
               STORAGE_KEYS.LAB_PREFERED_MODE,
               JSON.stringify(value)
@@ -277,7 +277,7 @@ export function useSettings() {
               value as string
             );
             break;
-          case "labPreferedMode":
+          case "labPreferredMode":
             localStorage.setItem(
               STORAGE_KEYS.LAB_PREFERED_MODE,
               JSON.stringify(value)

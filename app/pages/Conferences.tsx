@@ -91,7 +91,7 @@ export default function Conferences() {
     settings.pinnedConferences,
     debouncedKeyword,
     settings.dateRange,
-    settings.labPreferedMode,
+    settings.labPreferredMode,
     isLoaded,
     resetPageIndex,
   ]);
@@ -112,7 +112,7 @@ export default function Conferences() {
     const loadTypes = async () => {
       try {
         const params = new URLSearchParams({
-          labPreferedMode: settings.labPreferedMode.toString(),
+          labPreferredMode: settings.labPreferredMode.toString(),
         });
         const response = await fetch(`/api/types?${params.toString()}`);
         if (!response.ok) {
@@ -125,7 +125,7 @@ export default function Conferences() {
       }
     };
     loadTypes();
-  }, [settings.labPreferedMode, isLoaded]);
+  }, [settings.labPreferredMode, isLoaded]);
 
   const fetchConferences = useCallback(async () => {
     if (!isLoaded) return;
@@ -139,7 +139,7 @@ export default function Conferences() {
         pageIndex: settings.pageIndex.toString(),
         pageSize: settings.pageSize.toString(),
         pinnedIds: settings.pinnedConferences.join(","),
-        labPreferedMode: settings.labPreferedMode.toString(),
+        labPreferredMode: settings.labPreferredMode.toString(),
       });
 
       if (settings.dateRange?.from) {
@@ -173,7 +173,7 @@ export default function Conferences() {
     settings.pageSize,
     settings.pinnedConferences,
     settings.dateRange,
-    settings.labPreferedMode,
+    settings.labPreferredMode,
     isLoaded,
   ]);
 
@@ -203,25 +203,25 @@ export default function Conferences() {
                       variant="outline"
                       onClick={() =>
                         updateSetting(
-                          "labPreferedMode",
-                          !settings.labPreferedMode
+                          "labPreferredMode",
+                          !settings.labPreferredMode
                         )
                       }
                       className={`${
-                        settings.labPreferedMode
+                        settings.labPreferredMode
                           ? "bg-blue-100 border-blue-200"
                           : ""
                       }`}
                     >
                       <CopyrightIcon
                         className={`size-4 ${
-                          settings.labPreferedMode ? "text-blue-500" : ""
+                          settings.labPreferredMode ? "text-blue-500" : ""
                         }`}
                       />
                     </Toggle>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {settings.labPreferedMode
+                    {settings.labPreferredMode
                       ? "Show full CCF conferences"
                       : "Show custom CCF conferences"}
                   </TooltipContent>

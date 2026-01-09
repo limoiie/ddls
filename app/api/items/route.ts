@@ -1,9 +1,6 @@
 import { getAllNotifications } from "@/app/lib/database";
 import { getIANATimezone } from "@/app/lib/date";
-import {
-  readAllConferenceYamlFiles,
-  readCustomTypesYamlFile,
-} from "@/app/lib/load-conferences";
+import { readAllConferenceYamlFiles, readCustomTypesYamlFile, } from "@/app/lib/load-conferences";
 import { ConfEdition, Conference } from "@/app/types/api";
 import { isPast } from "date-fns";
 import moment from "moment-timezone";
@@ -52,7 +49,7 @@ export async function GET(request: NextRequest) {
       .get("types")
       ?.split(",")
       .filter((t) => t !== "") || [];
-  const labPreferedMode = searchParams.get("labPreferedMode") === "true";
+  const labPreferredMode = searchParams.get("labPreferredMode") === "true";
   const startDate = searchParams.get("startDate") || "";
   const endDate = searchParams.get("endDate") || "";
   const pinnedIds = searchParams.get("pinnedIds")?.split(",") || [];
@@ -90,13 +87,13 @@ export async function GET(request: NextRequest) {
 
   // Filter items based on keyword, CCF, and date range if provided and sort by the latest conference date
   const sortedFilteredItems: Conference[] = itemsWithNotifications
-    // Overwrite types if labPreferedMode is enabled
+    // Overwrite types if labPreferredMode is enabled
     .map((item) => {
-      return labPreferedMode
+      return labPreferredMode
         ? {
-            ...item,
-            sub: customTypes[item.title] || "",
-          }
+          ...item,
+          sub: customTypes[item.title] || "",
+        }
         : item;
     })
     .filter((item) => item.sub !== "")
